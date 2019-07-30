@@ -1,6 +1,14 @@
 # 🍸 flooks
 
-A state manager for React Hooks
+> A state manager for React Hooks.
+>
+> Maybe the simplest.
+
+![npm](https://img.shields.io/npm/v/flooks?style=flat-square)
+![Travis (.org)](https://img.shields.io/travis/nanxiaobei/flooks?style=flat-square)
+![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)
+![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)
+![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)
 
 ## Installation
 
@@ -17,10 +25,9 @@ npm install flooks
 ## Examples
 
 ```jsx harmony
-import { createModel, useModel } from 'flooks';
+import { setModel, useModel } from 'flooks';
 
-createModel({
-  name: 'counter',
+const model = {
   state: {
     count: 0,
   },
@@ -39,11 +46,12 @@ createModel({
       increment();
     },
   }),
-});
+};
 
-const Counter = () => {
+setModel('counter', model);
+
+function Counter() {
   const { count, increment, decrement, incrementAsync } = useModel('counter');
-
   return (
     <>
       Count: {count}
@@ -52,18 +60,18 @@ const Counter = () => {
       <button onClick={incrementAsync}>+ async</button>
     </>
   );
-};
+}
 ```
 
 ## API
 
-### createModel
+### setModel
 
 ```js
-createModel(model);
+setModel(name, model);
 ```
 
-Initial `model` is an object, like `{ name: 'demo', state: {}, actions: ({ getModel, setState }) => ({}) }`
+Initial `model` is an object, like `{ state: {}, actions: ({ getModel, setState }) => ({}) }`
 
 ### useModel
 
@@ -112,20 +120,19 @@ When an action is async, `someAsyncAction.loading` can be use.
 
 ### Code splitting?
 
-Call `createModel` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
+Call `setModel` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
 
 ### Create models together?
 
 ```js
 // models.js
 
-import { createModel } from 'flooks';
-import a from './a/model';
-import b from './b/model';
-import c from './c/model';
+import { setModel } from 'flooks';
 
-const models = [a, b, c];
-models.forEach(createModel);
+const models = { a, b, c, d };
+Object.entries(models).forEach(([name, model]) => {
+  setModel(name, model);
+});
 ```
 
 Don't forget `import './models.js'` in entry file.
