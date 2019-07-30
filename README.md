@@ -12,6 +12,10 @@ A state manager for React Hooks. Maybe the simplest. ^\_^
 
 ---
 
+English | [简体中文](./README.zh-CN.md)
+
+---
+
 ## Install
 
 ```shell

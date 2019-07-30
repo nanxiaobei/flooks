@@ -12,6 +12,10 @@
 
 ---
 
+[English](./README.md) | 简体中文
+
+---
+
 ## 安装
 
 ```shell
