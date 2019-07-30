@@ -15,5 +15,5 @@ const plugins = (useESModules) => [
 export default [
   { input, output: { file: main, format: 'cjs' }, external, plugins: plugins(false) },
   { input, output: { file: module, format: 'es' }, external, plugins: plugins(true) },
-  { input, output: [{ file: types, format: 'es' }], plugins: [dts()] },
+  { input, output: { file: types, format: 'es' }, plugins: [dts()] },
 ];
