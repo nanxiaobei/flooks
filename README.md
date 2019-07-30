@@ -6,9 +6,11 @@ A state manager for React Hooks
 
 ```shell
 yarn add flooks
+```
 
-// or
+or
 
+```shell
 npm install flooks
 ```
 
@@ -61,12 +63,12 @@ const Counter = () => {
 createModel(model);
 ```
 
-`model` is an object, like `{ name: 'demo', state: {}, actions: ({ getModel, setState }) => ({}) }`
+Initial `model` is an object, like `{ name: 'demo', state: {}, actions: ({ getModel, setState }) => ({}) }`
 
 ### useModel
 
 ```js
-const modelData = useModel(name);
+const model = useModel(name);
 ```
 
 A React Hook, used to get a model's state and actions.
@@ -74,10 +76,13 @@ A React Hook, used to get a model's state and actions.
 ### getModel
 
 ```js
-const modelData = getModel([name]);
+const model = getModel(name?);
+
+// const own = getModel();
+// const other = getModel('other');
 ```
 
-Argument to `actions`, used in an action.
+Argument to `actions`.
 
 Like `useModel`, but when get own model, `name` can be omitted.
 
@@ -85,15 +90,17 @@ Like `useModel`, but when get own model, `name` can be omitted.
 
 ```js
 setState(payload);
+
+// setState({ ...newState })
 ```
 
-Argument to `actions`, used in an action.
+Argument to `actions`.
 
 Set own model's state. (can't set other models')
 
-## Guides
+## FAQ
 
-### Automatically loading
+### Automatically loading?
 
 ```js
 actions: ({ getModel, setState }) => ({
@@ -103,11 +110,11 @@ actions: ({ getModel, setState }) => ({
 
 When an action is async, `someAsyncAction.loading` can be use.
 
-### Code splitting
+### Code splitting?
 
 Call `createModel` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
 
-### Create models together
+### Create models together?
 
 ```js
 // models.js
