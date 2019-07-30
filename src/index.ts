@@ -50,7 +50,6 @@ export const setModel: SetModel = (name, model) => {
   let state: State;
   let actionsCreator: ActionsCreator;
 
-  console.log('process.env.NODE_ENV ', process.env.NODE_ENV);
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
       throw new Error(nameType());
