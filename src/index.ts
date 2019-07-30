@@ -18,32 +18,56 @@ interface GetModel {
 interface SetState {
   (state?: State): void;
 }
-interface CreateModel {
-  (model: {
-    name: string;
-    state: State;
-    actions: ({ getModel, setState }: { getModel: GetModel; setState: SetState }) => Actions;
-  }): void;
+interface ActionsCreator {
+  ({ getModel, setState }: { getModel: GetModel; setState: SetState }): Actions;
+}
+interface SetModel {
+  (name: string, model: { state: State; actions: ActionsCreator }): void;
 }
 interface UseModel {
   (modelName: string): State | Actions;
 }
 
-const isObject = (obj: any) => Object.prototype.toString.call(obj) === '[object Object]';
+/**
+ * Utils
+ */
+const nameType = (): string => '"name" must be a string';
+const modelType = (): string => '"model" must be an object';
+const modelExist = (name: string): string => `"${name}" model already exists`;
+const modelNotExist = (name: string): string => `"${name}" model dose not exist`;
+const modelKeysType = (): string => `"model" must be { state: object, actions: function }`;
+const isObject = (data: any): boolean => Object.prototype.toString.call(data) === '[object Object]';
 
+/**
+ * Models' store
+ */
 const models: Models = {};
 
-export const createModel: CreateModel = (model) => {
-  if (!isObject(model)) {
-    throw new Error('"model" must be an object');
-  }
-  const { name, state, actions: actionsCreator } = model;
-  if (typeof name !== 'string' || !isObject(state) || typeof actionsCreator !== 'function') {
-    throw new Error('"model" must be { name: string, state: object, actions: function }');
-  }
-  if (name in models) {
-    console.warn(`"${name}" model already exists`);
-    return;
+/**
+ * Set a model with model's name and the initial model
+ */
+export const setModel: SetModel = (name, model) => {
+  let state: State;
+  let actionsCreator: ActionsCreator;
+
+  console.log('process.env.NODE_ENV ', process.env.NODE_ENV);
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof name !== 'string') {
+      throw new Error(nameType());
+    }
+    if (name in models) {
+      console.warn(modelExist(name));
+      return;
+    }
+    if (!isObject(model)) {
+      throw new Error(modelType());
+    }
+    ({ state, actions: actionsCreator } = model);
+    if (!isObject(state) || typeof actionsCreator !== 'function') {
+      throw new Error(modelKeysType());
+    }
+  } else {
+    ({ state, actions: actionsCreator } = model);
   }
 
   const getModel: GetModel = (modelName = name) => {
@@ -84,12 +108,17 @@ export const createModel: CreateModel = (model) => {
   models[name] = { state, actions, setters: [] };
 };
 
+/**
+ * Get a model with model's name
+ */
 export const useModel: UseModel = (name) => {
-  if (typeof name !== 'string') {
-    throw new Error('"name" must be a string');
-  }
-  if (!(name in models)) {
-    throw new Error(`"${name}" model dose not exist`);
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof name !== 'string') {
+      throw new Error(nameType());
+    }
+    if (!(name in models)) {
+      throw new Error(modelNotExist(name));
+    }
   }
 
   const [, setState] = useState();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import { createModel, useModel } from './index';
+import { setModel, useModel } from './index';
 
 configure({ adapter: new Adapter() });
 
@@ -12,32 +12,39 @@ beforeAll(() => {
   });
 });
 
-test('createModel', () => {
+test('setModel', () => {
   expect(() => {
-    createModel();
+    setModel();
   }).toThrow();
-  expect(() => {
-    createModel({});
-  }).toThrow();
+
   const warn = jest.spyOn(console, 'warn');
-  const model = { name: 'exist', state: {}, actions: () => ({}) };
-  createModel(model);
-  createModel(model);
+  const model = { state: {}, actions: () => ({}) };
+  setModel('exist', model);
+  setModel('exist', model);
   expect(warn).toBeCalled();
+
+  expect(() => {
+    setModel('modelType');
+  }).toThrow();
+
+  expect(() => {
+    setModel('modelKeysType', {});
+  }).toThrow();
 });
 
 test('useModel', () => {
   expect(() => {
     useModel();
   }).toThrow();
+
   expect(() => {
-    useModel('test');
+    useModel('modelNotExist');
   }).toThrow();
 });
 
 test('component', (done) => {
-  createModel({
-    name: 'counter',
+  process.env.NODE_ENV = 'production';
+  const model = {
     state: {
       count: 0,
     },
@@ -52,8 +59,8 @@ test('component', (done) => {
         increase();
       },
     }),
-  });
-
+  };
+  setModel('counter', model);
   function Counter() {
     const { count, increase, increaseAsync } = useModel('counter');
     return (
@@ -68,8 +75,9 @@ test('component', (done) => {
       </>
     );
   }
-
   const wrapper = mount(<Counter />);
+  process.env.NODE_ENV = 'test';
+
   wrapper.find('.increase').simulate('click');
   wrapper.find('.increase-async').simulate('click');
   setTimeout(() => {
