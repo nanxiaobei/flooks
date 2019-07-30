@@ -31,11 +31,12 @@ interface UseModel {
 /**
  * Utils
  */
-const nameType = (): string => '"name" must be a string';
-const modelType = (): string => '"model" must be an object';
+const notString = (key: string): string => `"${key}" must be a string`;
+const notObject = (key: string): string => `"${key}" must be an object`;
+const notFunction = (key: string): string => `"${key}" must be a function`;
 const modelExist = (name: string): string => `"${name}" model already exists`;
 const modelNotExist = (name: string): string => `"${name}" model dose not exist`;
-const modelKeysType = (): string => `"model" must be { state: object, actions: function }`;
+
 const isObject = (data: any): boolean => Object.prototype.toString.call(data) === '[object Object]';
 
 /**
@@ -52,18 +53,21 @@ export const setModel: SetModel = (name, model) => {
 
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
-      throw new Error(nameType());
+      throw new Error(notString('name'));
     }
     if (name in models) {
       console.warn(modelExist(name));
       return;
     }
     if (!isObject(model)) {
-      throw new Error(modelType());
+      throw new Error(notObject('model'));
     }
     ({ state, actions: actionsCreator } = model);
-    if (!isObject(state) || typeof actionsCreator !== 'function') {
-      throw new Error(modelKeysType());
+    if (!isObject(state)) {
+      throw new Error(notObject('state'));
+    }
+    if (typeof actionsCreator !== 'function') {
+      throw new Error(notFunction('actions'));
     }
   } else {
     ({ state, actions: actionsCreator } = model);
@@ -113,7 +117,7 @@ export const setModel: SetModel = (name, model) => {
 export const useModel: UseModel = (name) => {
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
-      throw new Error(nameType());
+      throw new Error(notString('name'));
     }
     if (!(name in models)) {
       throw new Error(modelNotExist(name));

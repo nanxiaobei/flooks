@@ -30,6 +30,10 @@ test('setModel', () => {
   expect(() => {
     setModel('modelKeysType', {});
   }).toThrow();
+
+  expect(() => {
+    setModel('modelKeysType', { state: {} });
+  }).toThrow();
 });
 
 test('useModel', () => {
