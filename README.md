@@ -2,11 +2,11 @@
 
 A state manager for React Hooks. Maybe the simplest. ^\_^
 
-![npm](https://img.shields.io/npm/v/flooks?style=flat-square)
-![Travis (.org)](https://img.shields.io/travis/nanxiaobei/flooks?style=flat-square)
-![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)
-![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)
-![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)
+[![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
+[![Travis (.org)](https://img.shields.io/travis/nanxiaobei/flooks?style=flat-square)](https://travis-ci.org/nanxiaobei/flooks)
+[![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)](https://codecov.io/gh/nanxiaobei/flooks)
+[![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
+[![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
 🍰 Simple | 🍭 Auto loading | 🍕 Modules | 🥂 Flexible
 
