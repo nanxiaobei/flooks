@@ -27,7 +27,6 @@
   ],
   "scripts": {
     "test": "jest",
-    "test:w": "npm test -- --watchAll",
     "clean": "rimraf dist coverage",
     "build": "npm run clean && rollup -c",
     "codecov": "codecov"
