@@ -65,6 +65,10 @@ function Counter() {
 }
 ```
 
+## Demo
+
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5)
+
 ## API
 
 ### setModel
@@ -134,7 +138,7 @@ Object.entries(models).forEach(([name, model]) => {
 
 This is not recommended. Call `setModel` in components, which is more clear and flexible.
 
-### Anything else?
+## Philosophy
 
 1\. Our philosophy is decentralization, so we recommend to bind a model and a route entry component as one module, call `setModel` in the component to bind two.
 
