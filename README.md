@@ -1,14 +1,14 @@
 # 🍸 flooks
 
-> A state manager for React Hooks.
->
-> Maybe the simplest.
-
 ![npm](https://img.shields.io/npm/v/flooks?style=flat-square)
 ![Travis (.org)](https://img.shields.io/travis/nanxiaobei/flooks?style=flat-square)
 ![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)
 ![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)
 ![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)
+
+A state manager for React Hooks. Maybe the simplest.
+
+😜 Simple | 😇 Auto loading | 🤧 Code splitting | 😋 Decentralization | 😇 Flexible
 
 ## Installation
 
@@ -108,7 +108,7 @@ Set own model's state. (can't set other models')
 
 ## FAQ
 
-### Automatically loading?
+### Auto loading?
 
 ```js
 actions: ({ getModel, setState }) => ({
@@ -120,14 +120,14 @@ When an action is async, `someAsyncAction.loading` can be use.
 
 ### Code splitting?
 
-Call `setModel` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
+It is supported naturally. Call `setModel` in different components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
 
 ### Create models together?
 
 ```js
-// models.js
-
 import { setModel } from 'flooks';
+import a from '...';
+...
 
 const models = { a, b, c, d };
 Object.entries(models).forEach(([name, model]) => {
@@ -135,4 +135,4 @@ Object.entries(models).forEach(([name, model]) => {
 });
 ```
 
-Don't forget `import './models.js'` in entry file.
+This is not recommended. Our philosophy is decentralization, call `setModel` in different components, which more clear and flexible.
