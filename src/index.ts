@@ -45,7 +45,7 @@ const isObject = (data: any): boolean => Object.prototype.toString.call(data) ==
 const models: Models = {};
 
 /**
- * Set a model with model's name and the initial model
+ * Initialize a model
  */
 export const setModel: SetModel = (name, model) => {
   let state: State;
@@ -113,7 +113,7 @@ export const setModel: SetModel = (name, model) => {
 };
 
 /**
- * Get a model with model's name
+ * Returns the initialized model
  */
 export const useModel: UseModel = (name) => {
   if (process.env.NODE_ENV !== 'production') {
