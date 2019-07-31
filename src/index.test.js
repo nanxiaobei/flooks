@@ -52,13 +52,13 @@ test('component', (done) => {
     state: {
       count: 0,
     },
-    actions: ({ getModel, setState }) => ({
+    actions: ({ model, setState }) => ({
       increase() {
-        const { count } = getModel();
+        const { count } = model();
         setState({ count: count + 1 });
       },
       async increaseAsync() {
-        const { increase } = getModel();
+        const { increase } = model();
         await new Promise((resolve) => setTimeout(resolve, 1000));
         increase();
       },

@@ -18,11 +18,11 @@ interface GetModel {
 interface SetState {
   (state?: State): void;
 }
-interface ActionsCreator {
-  ({ getModel, setState }: { getModel: GetModel; setState: SetState }): Actions;
+interface GetActions {
+  ({ model, setState }: { model: GetModel; setState: SetState }): Actions;
 }
 interface SetModel {
-  (name: string, model: { state: State; actions: ActionsCreator }): void;
+  (name: string, model: { state: State; actions: GetActions }): void;
 }
 interface UseModel {
   (modelName: string): State | Actions;
@@ -49,7 +49,7 @@ const models: Models = {};
  */
 export const setModel: SetModel = (name, model) => {
   let state: State;
-  let actionsCreator: ActionsCreator;
+  let getActions: GetActions;
 
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
@@ -62,15 +62,15 @@ export const setModel: SetModel = (name, model) => {
     if (!isObject(model)) {
       throw new Error(notObject('model'));
     }
-    ({ state, actions: actionsCreator } = model);
+    ({ state, actions: getActions } = model);
     if (!isObject(state)) {
       throw new Error(notObject('state'));
     }
-    if (typeof actionsCreator !== 'function') {
+    if (typeof getActions !== 'function') {
       throw new Error(notFunction('actions'));
     }
   } else {
-    ({ state, actions: actionsCreator } = model);
+    ({ state, actions: getActions } = model);
   }
 
   const getModel: GetModel = (modelName = name) => {
@@ -91,9 +91,10 @@ export const setModel: SetModel = (name, model) => {
     setState();
   };
 
-  const actions: Actions = {};
-  Object.entries(actionsCreator({ getModel, setState })).forEach(([actionName, action]) => {
-    actions[actionName] = function(...args) {
+  const oldActions = getActions({ model: getModel, setState });
+  const newActions: Actions = {};
+  Object.entries(oldActions).forEach(([actionName, action]) => {
+    newActions[actionName] = function(...args) {
       const res = action(...args);
       if (!res || typeof res.then !== 'function') return res;
       setLoading(actionName, true);
@@ -108,7 +109,7 @@ export const setModel: SetModel = (name, model) => {
     };
   });
 
-  models[name] = { state, actions, setters: [] };
+  models[name] = { state, actions: newActions, setters: [] };
 };
 
 /**
