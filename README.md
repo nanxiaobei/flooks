@@ -18,13 +18,13 @@ English | [简体中文](./README.zh-CN.md)
 
 ## Install
 
-```shell
+```sh
 yarn add flooks
 ```
 
 or
 
-```shell
+```sh
 npm install flooks
 ```
 
@@ -93,11 +93,7 @@ const { someState, someAction } = useModel(name);
 
 A React Hook. Accepts a name, returns the initialized model with all its states and actions.
 
-### state
-
-An object. Contains the initial state of the model.
-
-### actions
+### ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({
@@ -105,9 +101,7 @@ actions: ({ model, setState }) => ({
 });
 ```
 
-A function. Returns an object with the real actions.
-
-Its argument contains two functions, `model()` and `setState()`.
+The argument of `actions` contains two functions, `model()` and `setState()`.
 
 #### model()
 
@@ -115,7 +109,7 @@ Its argument contains two functions, `model()` and `setState()`.
 const { someState, someAction } = model(name?);
 ```
 
-Returns the same as `useModel`, but when get own model, `name` can be omitted.
+Returns the same as `useModel()`, but when get own model, `name` can be omitted.
 
 i.e. `model()` for own model, `model('other')` for other models.
 
@@ -162,7 +156,7 @@ This is not recommended. Call `setModel()` separately in components, which is mo
 
 1\. Our philosophy is decentralization, so we recommend to bind a model and a route entry component as one module, call `setModel()` in the component to bind two.
 
-2\. No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now. Without the centralized store, just the modules consisting of models and components in the lower level.
+2\. No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now. Without the centralized store, just the modules consisting of components and models in the lower level.
 
 3\. A model has its own space, with `useModel()` and `model()`, all other models can be reached. Models are independent, but also connected.
 

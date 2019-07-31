@@ -18,13 +18,13 @@
 
 ## 安装
 
-```shell
+```sh
 yarn add flooks
 ```
 
 或
 
-```shell
+```sh
 npm install flooks
 ```
 
@@ -93,11 +93,7 @@ const { someState, someAction } = useModel(name);
 
 一个 React Hook。接收一个名称，返回初始化后的 model，包含其所有 state 和 actions。
 
-### state
-
-一个对象。放置 model 的初始 state。
-
-### actions
+### ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({
@@ -105,9 +101,7 @@ actions: ({ model, setState }) => ({
 });
 ```
 
-一个函数。返回一个包含了真正 action 的对象。
-
-其参数中拥有两个函数，`model()` 和 `setState()`。
+`actions` 的参数中包含两个函数，`model()` 和 `setState()`。
 
 #### model()
 
@@ -115,7 +109,7 @@ actions: ({ model, setState }) => ({
 const { someState, someAction } = model(name?);
 ```
 
-返回与 `useModel` 相同，但当获取自身 model 时，`name` 可以忽略。
+返回与 `useModel()` 相同，但当获取自身 model 时，`name` 可以忽略。
 
 即 `model()` 获取自身 model，`model('other')` 获取其它 model。
 
@@ -162,7 +156,7 @@ Object.entries(models).forEach(([name, model]) => {
 
 1\. 我们的理念是去中心化，因此我们建议将 model 和路由入口组件绑定为一个模块，在组件中调用 `setModel()` 来绑定二者。
 
-2\. 不需要添加像 `store.js` 或 `models.js` 这样的文件，因为现在不需要从顶部分发 store。没有了中心化的 store，只有下层由 model 和组件组成的一个个模块。
+2\. 不需要添加像 `store.js` 或 `models.js` 这样的文件，因为现在不需要从顶部分发 store。没有了中心化的 store，只有下层由组件和 model 组成的一个个模块。
 
 3\. 一个 model 有自己的空间，使用 `useModel()` 和 `model()`，可以访问到其他所有的 model。model 都是独立的，但同时也是连接的。
 
