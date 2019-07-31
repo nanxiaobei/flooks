@@ -33,28 +33,28 @@ npm install flooks
 ```jsx harmony
 import { setModel, useModel } from 'flooks';
 
-const model = {
+const counter = {
   state: {
     count: 0,
   },
-  actions: ({ getModel, setState }) => ({
+  actions: ({ model, setState }) => ({
     increment() {
-      const { count } = getModel();
+      const { count } = model();
       setState({ count: count + 1 });
     },
     decrement() {
-      const { count } = getModel();
+      const { count } = model();
       setState({ count: count - 1 });
     },
     async incrementAsync() {
-      const { increment } = getModel();
+      const { increment } = model();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       increment();
     },
   }),
 };
 
-setModel('counter', model);
+setModel('counter', counter);
 
 function Counter() {
   const { count, increment, decrement, incrementAsync } = useModel('counter');
@@ -75,48 +75,64 @@ function Counter() {
 
 ## API
 
-### setModel
+### setModel()
 
 ```js
 setModel(name, model);
 ```
 
-Accepts a `name` string and an initial `model` object, creates a namespaced model.
+Accepts a name string and an model object, initialize the model.
 
-The initial `model` contains a `state` object and an `actions` function.
+The model object needs to contain a `state` object and an `actions` function.
 
-### useModel
-
-```js
-const model = useModel(name);
-```
-
-A React Hook. Accepts a model's name, returns a model object with all state and actions.
-
-### getModel
+### useModel()
 
 ```js
-const model = getModel(name?);
+const { someState, someAction } = useModel(name);
 ```
 
-Argument to `actions`. Like `useModel`, but when get own model, `name` can be omitted.
+A React Hook. Accepts a name, returns the initialized model with all its states and actions.
 
-i.e. `getModel()` for own model, `getModel('other')` for other models.
+### state
 
-### setState
+An object. Contains the initial state of the model.
+
+### actions
+
+```js
+actions: ({ model, setState }) => ({
+  someAction() {},
+});
+```
+
+A function. Returns an object with the real actions.
+
+Its argument contains two functions, `model()` and `setState()`.
+
+#### model()
+
+```js
+const { someState, someAction } = model(name?);
+```
+
+Returns the same as `useModel`, but when get own model, `name` can be omitted.
+
+i.e. `model()` for own model, `model('other')` for other models.
+
+#### setState()
 
 ```js
 setState(payload);
 ```
 
-Argument to `actions`. Update own model's state with `payload` object, can't update other models'.
+Used to update own model's state with the `payload` object, can't update other models'.
 
 ## FAQ
 
 ### Auto loading?
 
 ```js
-actions: ({ getModel, setState }) => ({
+actions: ({ model, setState }) => ({
   async someAsyncAction() {},
 });
 ```
@@ -125,7 +141,7 @@ When an action is async, `someAsyncAction.loading` can be use.
 
 ### Code splitting?
 
-Supported naturally. Call `setModel` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
+Supported naturally. Call `setModel()` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
 
 ### Set models together?
 
@@ -134,23 +150,23 @@ import { setModel } from 'flooks';
 import a from '...';
 ...
 
-const models = { a, b, c, d };
+const models = { a, b, c };
 Object.entries(models).forEach(([name, model]) => {
   setModel(name, model);
 });
 ```
 
-This is not recommended. Call `setModel` separately in components, which is more clear and flexible.
+This is not recommended. Call `setModel()` separately in components, which is more clear and flexible.
 
 ## Philosophy
 
-1\. Our philosophy is decentralization, so we recommend to bind a model and a route entry component as one module, call `setModel` in the component to bind two.
+1\. Our philosophy is decentralization, so we recommend to bind a model and a route entry component as one module, call `setModel()` in the component to bind two.
 
-2\. No need to add a file like `store.js` or `models.js`, because we don't need to distribute the store from top now. Without the centralized store, just models and components.
+2\. No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now. Without the centralized store, just the modules consisting of models and components in the lower level.
 
-3\. A module has its own space, with `useModel` and `getModel`, all other models can be reached. Modules are independent, but also connected.
+3\. A model has its own space, with `useModel()` and `model()`, all other models can be reached. Models are independent, but also connected.
 
-4\. Don't call `setModel` multiple times on a model, if you have a "common" model used in several place, recommend to initialize the "common" model in a skeleton component like `App.jsx`.
+4\. Don't initialize a model multiple times using `setModel()`, if have a "common" model used in several places, recommend to to initialize it in an upper component, such as `App.jsx`.
 
 5\. That's all, enjoy it~
 

@@ -33,28 +33,28 @@ npm install flooks
 ```jsx harmony
 import { setModel, useModel } from 'flooks';
 
-const model = {
+const counter = {
   state: {
     count: 0,
   },
-  actions: ({ getModel, setState }) => ({
+  actions: ({ model, setState }) => ({
     increment() {
-      const { count } = getModel();
+      const { count } = model();
       setState({ count: count + 1 });
     },
     decrement() {
-      const { count } = getModel();
+      const { count } = model();
       setState({ count: count - 1 });
     },
     async incrementAsync() {
-      const { increment } = getModel();
+      const { increment } = model();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       increment();
     },
   }),
 };
 
-setModel('counter', model);
+setModel('counter', counter);
 
 function Counter() {
   const { count, increment, decrement, incrementAsync } = useModel('counter');
@@ -75,48 +75,64 @@ function Counter() {
 
 ## API
 
-### setModel
+### setModel()
 
 ```js
 setModel(name, model);
 ```
 
-接受一个 `name` 字符串和一个初始化 `model` 对象，生成一个具有名称空间的 model。
+接收一个名称字符串和一个 model 对象，初始化 model。
 
-初始化 `model` 包含一个 `state` 对象和一个 `actions` 函数。
+model 对象需包含一个 `state` 对象和一个 `actions` 函数。
 
-### useModel
-
-```js
-const model = useModel(name);
-```
-
-一个 React Hook。接收一个 model 的 name，返回一个 model 对象，包含所有 state 和 actions。
-
-### getModel
+### useModel()
 
 ```js
-const model = getModel(name?);
+const { someState, someAction } = useModel(name);
 ```
 
-传入 `actions` 的参数。用法同 `useModel` 一致，但当获取自身 model 时，`name` 可以忽略。
+一个 React Hook。接收一个名称，返回初始化后的 model，包含其所有 state 和 actions。
 
-即 `getModel()` 获取自身 model，`getModel('other')` 获取其它 model。
+### state
 
-### setState
+一个对象。放置 model 的初始 state。
+
+### actions
+
+```js
+actions: ({ model, setState }) => ({
+  someAction() {},
+});
+```
+
+一个函数。返回一个包含了真正 action 的对象。
+
+其参数中拥有两个函数，`model()` 和 `setState()`。
+
+#### model()
+
+```js
+const { someState, someAction } = model(name?);
+```
+
+返回与 `useModel` 相同，但当获取自身 model 时，`name` 可以忽略。
+
+即 `model()` 获取自身 model，`model('other')` 获取其它 model。
+
+#### setState()
 
 ```js
 setState(payload);
 ```
 
-传入 `actions` 的参数。更新自身 model 的 state，使用 `payload` 对象，无法更新其它 model。
+用于更新自身 model 的 state，传入 `payload` 对象，无法更新其它 model。
 
 ## FAQ
 
 ### 自动 loading ？
 
 ```js
-actions: ({ getModel, setState }) => ({
+actions: ({ model, setState }) => ({
   async someAsyncAction() {},
 });
 ```
@@ -125,7 +141,7 @@ actions: ({ getModel, setState }) => ({
 
 ### 代码分割？
 
-天然支持。在组件中调用 `setModel`，然后使用像 [`loadable-components`](https://github.com/smooth-code/loadable-components) 这样的库。
+天然支持。在组件中调用 `setModel()`，然后使用像 [`loadable-components`](https://github.com/smooth-code/loadable-components) 这样的库。
 
 ### 统一设置 model？
 
@@ -134,23 +150,23 @@ import { setModel } from 'flooks';
 import a from '...';
 ...
 
-const models = { a, b, c, d };
+const models = { a, b, c };
 Object.entries(models).forEach(([name, model]) => {
   setModel(name, model);
 });
 ```
 
-不推荐统一设置。在组件中分别调用 `setModel`，这样更加清晰和灵活。
+不推荐统一设置。请在组件中分别调用 `setModel()`，那样更加清晰和灵活。
 
 ## 理念
 
-1\. 我们的理念是去中心化，因此我们建议将 model 和路由入口组件绑定为一个模块，在组件中调用 `setModel` 来绑定二者。
+1\. 我们的理念是去中心化，因此我们建议将 model 和路由入口组件绑定为一个模块，在组件中调用 `setModel()` 来绑定二者。
 
-2\. 不需要添加像 `store.js` 或 `models.js` 这样的文件，因为我们现在不需要从顶部分发 store。没有了中心化的 store，只是 model 和组件。
+2\. 不需要添加像 `store.js` 或 `models.js` 这样的文件，因为现在不需要从顶部分发 store。没有了中心化的 store，只有下层由 model 和组件组成的一个个模块。
 
-3\. 一个模块有自己的空间，使用 `useModel` 和 `getModel`，可以访问到其他所有 model。所以模块都是独立的，但同时也是连接的。
+3\. 一个 model 有自己的空间，使用 `useModel()` 和 `model()`，可以访问到其他所有的 model。model 都是独立的，但同时也是连接的。
 
-4\. 不要使用 `setmodel` 多次调用一个 model，如果有一个 "common" model 在多个地方使用，建议在骨架组件中初始化 "common" model，比如 `App.jsx`。
+4\. 不要使用 `setmodel()` 多次初始化同一个 model，如果有一个 "common" model 在多个地方使用，建议在一个上层组件中进行初始化，比如 `App.jsx`。
 
 5\. 就这些，完事啦~
 
