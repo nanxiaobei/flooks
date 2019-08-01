@@ -103,12 +103,10 @@ test('middleware', () => {
       },
     }),
   };
-  const modelB = { state: {}, actions: () => ({}), middleware: { count: fnMiddlewareB } };
-  const modelC = { state: {}, actions: () => ({}), middleware: { count: fnMiddlewareC } };
-  const InvalidFunc = { state: {}, actions: () => ({}), middleware: { count: 'invalidFunc' } };
-  const invalidMiddleware = { state: {}, actions: () => ({}), middleware: 'invalid' };
+  const modelB = { state: {}, actions: () => ({}), middlewares: () => ({ count: fnMiddlewareB }) };
+  const modelC = { state: {}, actions: () => ({}), middlewares: () => ({ count: fnMiddlewareC }) };
+  const invalidMiddleware = { state: {}, actions: () => ({}), middlewares: {} };
 
-  setModel('InvalidFunc', InvalidFunc);
   expect(() => {
     setModel('invalidMiddleware', invalidMiddleware);
   }).toThrow();

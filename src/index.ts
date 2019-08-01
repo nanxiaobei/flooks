@@ -12,11 +12,14 @@ interface Setter {
 interface Models {
   [modelName: string]: { state: State; actions: Actions; setters: Setter[] };
 }
-interface Middlewares {
-  [modelName: string]: { (...args: any[]): any } [];
+interface MiddlewareStore {
+  [modelName: string]: { (): void } [];
 }
-interface Middleware {
-  [modelName: string]: { (...args: any[]): any };
+interface Middlewares {
+  [modelName: string]: { (): void };
+}
+interface GetMiddlewares {
+  ({ model, setState }: { model: GetModel; setState: SetState }): Middlewares;
 }
 interface GetModel {
   (modelName?: string): State | Actions;
@@ -28,7 +31,7 @@ interface GetActions {
   ({ model, setState }: { model: GetModel; setState: SetState }): Actions;
 }
 interface SetModel {
-  (name: string, model: { state: State; actions: GetActions }): void;
+  (name: string, model: { state: State; actions: GetActions; middlewares?: GetMiddlewares }): void;
 }
 interface UseModel {
   (modelName: string): State | Actions;
@@ -53,7 +56,7 @@ const models: Models = {};
 /**
  * Middlewares' store
  */
-const middlewares: Middlewares = {};
+const middlewares: MiddlewareStore = {};
 
 /**
  * Initialize a model
@@ -61,7 +64,7 @@ const middlewares: Middlewares = {};
 export const setModel: SetModel = (name, model) => {
   let state: State;
   let getActions: GetActions;
-  let middleware: Middleware;
+  let getMiddlewares: GetMiddlewares;
 
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
@@ -74,18 +77,18 @@ export const setModel: SetModel = (name, model) => {
     if (!isObject(model)) {
       throw new Error(notObject('model'));
     }
-    ({ state, actions: getActions, middleware } = model);
+    ({ state, actions: getActions, middlewares: getMiddlewares } = model);
     if (!isObject(state)) {
       throw new Error(notObject('state'));
     }
     if (typeof getActions !== 'function') {
       throw new Error(notFunction('actions'));
     }
-    if (middleware && !isObject(middleware)) {
-      throw new Error(notObject('middleware'));
+    if (getMiddlewares && typeof getMiddlewares !== 'function') {
+      throw new Error(notFunction('middlewares'));
     }
   } else {
-    ({ state, actions: getActions, middleware } = model);
+    ({ state, actions: getActions, middlewares: getMiddlewares } = model);
   }
 
   const getModel: GetModel = (modelName = name) => {
@@ -97,7 +100,7 @@ export const setModel: SetModel = (name, model) => {
     const newState = { ...state, ...payload };
     models[name].state = newState;
     (middlewares[name] || []).forEach(action => {
-      action({ model: getModel, setState });
+      action();
     });
     setters.forEach((setter) => {
       setter(newState);
@@ -127,12 +130,11 @@ export const setModel: SetModel = (name, model) => {
     };
   });
 
-  if (middleware) {
-    Object.entries(middleware).forEach(([modelName, action]) => {
-      if (typeof action === 'function') {
-        const oldMiddleware = middlewares[modelName] || [];
-        middlewares[modelName] = [...oldMiddleware, action];
-      }
+  if (getMiddlewares) {
+    Object.entries(getMiddlewares({ model: getModel, setState }))
+      .forEach(([modelName, action]) => {
+      const oldMiddlewares = middlewares[modelName] || [];
+      middlewares[modelName] = [...oldMiddlewares, action];
     });
   }
 
