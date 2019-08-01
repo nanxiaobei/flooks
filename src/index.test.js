@@ -89,3 +89,42 @@ test('component', (done) => {
     done();
   }, 1000);
 });
+
+test('middleware', () => {
+  const fnMiddlewareB = jest.fn(() => ({}));
+  const fnMiddlewareC = jest.fn(() => ({}));
+
+  const modelCount = {
+    state: { count: 0 },
+    actions: ({ model, setState }) => ({
+      increase() {
+        const { count } = model();
+        setState({ count: count + 1 });
+      },
+    }),
+  };
+  const modelB = { state: {}, actions: () => ({}), middleware: { count: fnMiddlewareB } };
+  const modelC = { state: {}, actions: () => ({}), middleware: { count: fnMiddlewareC } };
+
+  setModel('count', modelCount);
+  setModel('b', modelB);
+  setModel('c', modelC);
+
+  function Counter() {
+    const { count, increase } = useModel('count');
+    return (
+      <>
+        <p>{count}</p>
+        <button className="increase" onClick={increase}>
+          +1
+        </button>
+      </>
+    );
+  }
+  const wrapper = mount(<Counter />);
+
+  wrapper.find('.increase').simulate('click');
+
+  expect(fnMiddlewareB).toBeCalled();
+  expect(fnMiddlewareC).toBeCalled();
+});

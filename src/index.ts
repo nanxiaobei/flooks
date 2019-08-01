@@ -12,6 +12,12 @@ interface Setter {
 interface Models {
   [modelName: string]: { state: State; actions: Actions; setters: Setter[] };
 }
+interface Middlewares {
+  [modelName: string]: { (...args: any[]): any } [];
+}
+interface Middleware {
+  [modelName: string]: { (...args: any[]): any };
+}
 interface GetModel {
   (modelName?: string): State | Actions;
 }
@@ -45,11 +51,17 @@ const isObject = (data: any): boolean => Object.prototype.toString.call(data) ==
 const models: Models = {};
 
 /**
+ * Middlewares' store
+ */
+const middlewares: Middlewares = {};
+
+/**
  * Initialize a model
  */
 export const setModel: SetModel = (name, model) => {
   let state: State;
   let getActions: GetActions;
+  let middleware: Middleware;
 
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
@@ -62,15 +74,18 @@ export const setModel: SetModel = (name, model) => {
     if (!isObject(model)) {
       throw new Error(notObject('model'));
     }
-    ({ state, actions: getActions } = model);
+    ({ state, actions: getActions, middleware } = model);
     if (!isObject(state)) {
       throw new Error(notObject('state'));
     }
     if (typeof getActions !== 'function') {
       throw new Error(notFunction('actions'));
     }
+    if (middleware && !isObject(middleware)) {
+      throw new Error(notObject('middleware'));
+    }
   } else {
-    ({ state, actions: getActions } = model);
+    ({ state, actions: getActions, middleware } = model);
   }
 
   const getModel: GetModel = (modelName = name) => {
@@ -81,6 +96,9 @@ export const setModel: SetModel = (name, model) => {
     const { state, setters } = models[name];
     const newState = { ...state, ...payload };
     models[name].state = newState;
+    (middlewares[name] || []).forEach(action => {
+      action({ model: getModel, setState });
+    });
     setters.forEach((setter) => {
       setter(newState);
     });
@@ -108,6 +126,15 @@ export const setModel: SetModel = (name, model) => {
       });
     };
   });
+
+  if (middleware) {
+    Object.entries(middleware).forEach(([modelName, action]) => {
+      if (typeof action === 'function') {
+        const oldMiddleware = middlewares[modelName] || [];
+        middlewares[modelName] = [...oldMiddleware, action];
+      }
+    });
+  }
 
   models[name] = { state, actions: newActions, setters: [] };
 };
