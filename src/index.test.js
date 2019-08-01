@@ -90,36 +90,68 @@ test('component', (done) => {
   }, 1000);
 });
 
-test('middleware', () => {
-  const fnMiddlewareB = jest.fn(() => ({}));
-  const fnMiddlewareC = jest.fn(() => ({}));
-
-  const modelCount = {
-    state: { count: 0 },
-    actions: ({ model, setState }) => ({
-      increase() {
-        const { count } = model();
-        setState({ count: count + 1 });
-      },
-    }),
-  };
-  const modelB = { state: {}, actions: () => ({}), middlewares: () => ({ count: fnMiddlewareB }) };
-  const modelC = { state: {}, actions: () => ({}), middlewares: () => ({ count: fnMiddlewareC }) };
+test('invalidMiddleware', () => {
   const invalidMiddleware = { state: {}, actions: () => ({}), middlewares: {} };
 
   expect(() => {
     setModel('invalidMiddleware', invalidMiddleware);
   }).toThrow();
+});
 
-  setModel('count', modelCount);
-  setModel('b', modelB);
-  setModel('c', modelC);
+test('middleware', (done) => {
+  const modelCount1 = {
+    state: { count1: 0 },
+    actions: ({ model, setState }) => ({
+      increase() {
+        const { count1 } = model();
+        setState({ count1: count1 + 1 });
+      },
+    }),
+  };
+  const modelCount2 = {
+    state: { count2: 0 },
+    actions: () => ({}),
+    middlewares: ({ model, setState }) => ({
+      count1: (count1State, count1PrevState) => {
+        if (count1State.count1 !== count1PrevState.count1) {
+          const { count2 } = model();
+          setState({ count2: count2 + 1 });
+        }
+      },
+    }),
+  };
+  const modelCount3 = {
+    state: { count3: 0 },
+    actions: () => ({}),
+    middlewares: ({ model, setState }) => ({
+      count1: (count1State, count1PrevState) => {
+        if (count1State.count1 !== count1PrevState.count1) {
+          const { count3 } = model();
+          setState({ count3: count3 + 1 });
+        }
+      },
+      count2: (count1State, count1PrevState) => {
+        if (count1State.count2 !== count1PrevState.count2) {
+          const { count3 } = model();
+          setState({ count3: count3 + 1 });
+        }
+      },
+    }),
+  };
+
+  setModel('count1', modelCount1);
+  setModel('count2', modelCount2);
+  setModel('count3', modelCount3);
 
   function Counter() {
-    const { count, increase } = useModel('count');
+    const { count1, increase } = useModel('count1');
+    const { count2 } = useModel('count2');
+    const { count3 } = useModel('count3');
     return (
       <>
-        <p>{count}</p>
+        <p id="count1">{count1}</p>
+        <p id="count2">{count2}</p>
+        <p id="count3">{count3}</p>
         <button className="increase" onClick={increase}>
           +1
         </button>
@@ -130,6 +162,11 @@ test('middleware', () => {
 
   wrapper.find('.increase').simulate('click');
 
-  expect(fnMiddlewareB).toBeCalled();
-  expect(fnMiddlewareC).toBeCalled();
+  setTimeout(() => {
+    expect(wrapper.find('#count1').text()).toBe('1');
+    expect(wrapper.find('#count2').text()).toBe('1');
+    expect(wrapper.find('#count3').text()).toBe('2');
+    wrapper.unmount();
+    done();
+  }, 100);
 });

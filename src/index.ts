@@ -13,10 +13,10 @@ interface Models {
   [modelName: string]: { state: State; actions: Actions; setters: Setter[] };
 }
 interface MiddlewareStore {
-  [modelName: string]: { (): void } [];
+  [modelName: string]: { (state: State, prevState: State): void } [];
 }
 interface Middlewares {
-  [modelName: string]: { (): void };
+  [modelName: string]: { (state: State, prevState: State): void };
 }
 interface GetMiddlewares {
   ({ model, setState }: { model: GetModel; setState: SetState }): Middlewares;
@@ -100,7 +100,7 @@ export const setModel: SetModel = (name, model) => {
     const newState = { ...state, ...payload };
     models[name].state = newState;
     (middlewares[name] || []).forEach(action => {
-      action();
+      action(newState, state);
     });
     setters.forEach((setter) => {
       setter(newState);
