@@ -112,8 +112,8 @@ test('middleware', (done) => {
     state: { count2: 0 },
     actions: () => ({}),
     middlewares: ({ model, setState }) => ({
-      count1: (count1State, count1PrevState) => {
-        if (count1State.count1 !== count1PrevState.count1) {
+      count1: (state, prevState) => {
+        if (state.count1 !== prevState.count1) {
           const { count2 } = model();
           setState({ count2: count2 + 1 });
         }
@@ -124,14 +124,14 @@ test('middleware', (done) => {
     state: { count3: 0 },
     actions: () => ({}),
     middlewares: ({ model, setState }) => ({
-      count1: (count1State, count1PrevState) => {
-        if (count1State.count1 !== count1PrevState.count1) {
+      count1: (state, prevState) => {
+        if (state.count1 !== prevState.count1) {
           const { count3 } = model();
           setState({ count3: count3 + 1 });
         }
       },
-      count2: (count1State, count1PrevState) => {
-        if (count1State.count2 !== count1PrevState.count2) {
+      count2: (state, prevState) => {
+        if (state.count2 !== prevState.count2) {
           const { count3 } = model();
           setState({ count3: count3 + 1 });
         }
