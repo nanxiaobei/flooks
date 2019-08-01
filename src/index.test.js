@@ -48,11 +48,15 @@ test('useModel', () => {
 
 test('component', (done) => {
   process.env.NODE_ENV = 'production';
+  // "production" start
   const model = {
     state: {
       count: 0,
     },
     actions: ({ model, setState }) => ({
+      showError() {
+        setState();
+      },
       increase() {
         const { count } = model();
         setState({ count: count + 1 });
@@ -66,22 +70,30 @@ test('component', (done) => {
   };
   setModel('counter', model);
   function Counter() {
-    const { count, increase, increaseAsync } = useModel('counter');
+    const { count, showError, increase, increaseAsync } = useModel('counter');
     return (
       <>
         <p>{count}</p>
+        <button className="show-error" onClick={showError}>
+          show error
+        </button>
         <button className="increase" onClick={increase}>
           +1
         </button>
         <button className="increase-async" onClick={increaseAsync}>
-          +1 Async{increaseAsync.loading && '...'}
+          +1 async{increaseAsync.loading && '...'}
         </button>
       </>
     );
   }
   const wrapper = mount(<Counter />);
+  wrapper.find('.show-error').simulate('click');
   process.env.NODE_ENV = 'test';
+  // "production" end
 
+  expect(() => {
+    wrapper.find('.show-error').simulate('click');
+  }).toThrow();
   wrapper.find('.increase').simulate('click');
   wrapper.find('.increase-async').simulate('click');
   setTimeout(() => {

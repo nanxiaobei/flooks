@@ -16,7 +16,7 @@ interface GetModel {
   (modelName?: string): State | Actions;
 }
 interface SetState {
-  (state?: State): void;
+  (state: State): void;
 }
 interface GetActions {
   ({ model, setState }: { model: GetModel; setState: SetState }): Actions;
@@ -40,7 +40,7 @@ const modelNotExist = (name: string): string => `"${name}" model dose not exist`
 const isObject = (data: any): boolean => Object.prototype.toString.call(data) === '[object Object]';
 
 /**
- * Models' store
+ * Initialized models
  */
 const models: Models = {};
 
@@ -48,8 +48,8 @@ const models: Models = {};
  * Initialize a model
  */
 export const setModel: SetModel = (name, model) => {
-  let state: State;
-  let getActions: GetActions;
+  let state;
+  let getActions;
 
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
@@ -73,11 +73,16 @@ export const setModel: SetModel = (name, model) => {
     ({ state, actions: getActions } = model);
   }
 
-  const getModel: GetModel = (modelName = name) => {
+  const getModel = (modelName = name) => {
     const { state, actions } = models[modelName];
     return { ...state, ...actions };
   };
   const setState: SetState = (payload) => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (!isObject(payload)) {
+        throw new Error(notObject('payload'));
+      }
+    }
     const { state, setters } = models[name];
     const newState = { ...state, ...payload };
     models[name].state = newState;
@@ -86,19 +91,19 @@ export const setModel: SetModel = (name, model) => {
     });
   };
 
-  const setLoading = (actionName: string, isLoading: boolean) => {
-    models[name].actions[actionName].loading = isLoading;
-    setState();
+  const actions: Actions = {};
+  const setLoading = (actionName: string, showLoading: boolean) => {
+    actions[actionName].loading = showLoading;
+    setState({});
   };
 
-  const oldActions = getActions({ model: getModel, setState });
-  const newActions: Actions = {};
-  Object.entries(oldActions).forEach(([actionName, action]) => {
-    newActions[actionName] = function(...args) {
-      const res = action(...args);
+  const rawActions = getActions({ model: getModel, setState });
+  Object.entries(rawActions).forEach(([actionName, rawAction]) => {
+    actions[actionName] = (...args) => {
+      const res = rawAction(...args);
       if (!res || typeof res.then !== 'function') return res;
-      setLoading(actionName, true);
       return new Promise((resolve, reject) => {
+        setLoading(actionName, true);
         res
           .then(resolve)
           .catch(reject)
@@ -109,11 +114,11 @@ export const setModel: SetModel = (name, model) => {
     };
   });
 
-  models[name] = { state, actions: newActions, setters: [] };
+  models[name] = { state, actions, setters: [] };
 };
 
 /**
- * Returns the initialized model
+ * Use a initialized model
  */
 export const useModel: UseModel = (name) => {
   if (process.env.NODE_ENV !== 'production') {
