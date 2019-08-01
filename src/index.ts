@@ -34,7 +34,6 @@ interface UseModel {
 const notString = (key: string): string => `"${key}" must be a string`;
 const notObject = (key: string): string => `"${key}" must be an object`;
 const notFunction = (key: string): string => `"${key}" must be a function`;
-const modelExist = (name: string): string => `"${name}" model already exists`;
 const modelNotExist = (name: string): string => `"${name}" model dose not exist`;
 
 const isObject = (data: any): boolean => Object.prototype.toString.call(data) === '[object Object]';
@@ -55,10 +54,8 @@ export const setModel: SetModel = (name, model) => {
     if (typeof name !== 'string') {
       throw new Error(notString('name'));
     }
-    if (name in models) {
-      console.warn(modelExist(name));
-      return;
-    }
+    if (name in models) return;
+
     if (!isObject(model)) {
       throw new Error(notObject('model'));
     }
@@ -70,6 +67,7 @@ export const setModel: SetModel = (name, model) => {
       throw new Error(notFunction('actions'));
     }
   } else {
+    if (name in models) return;
     ({ state, actions: getActions } = model);
   }
 

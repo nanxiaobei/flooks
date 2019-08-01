@@ -17,11 +17,12 @@ test('setModel', () => {
     setModel();
   }).toThrow();
 
-  const warn = jest.spyOn(console, 'warn');
   const model = { state: {}, actions: () => ({}) };
   setModel('exist', model);
   setModel('exist', model);
-  expect(warn).toBeCalled();
+  process.env.NODE_ENV = 'production';
+  setModel('exist', model);
+  process.env.NODE_ENV = 'test';
 
   expect(() => {
     setModel('modelType');
@@ -47,8 +48,8 @@ test('useModel', () => {
 });
 
 test('component', (done) => {
-  process.env.NODE_ENV = 'production';
   // "production" start
+  process.env.NODE_ENV = 'production';
   const model = {
     state: {
       count: 0,
