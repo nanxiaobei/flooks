@@ -27,9 +27,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "clean": "rimraf dist coverage",
-    "build": "npm run clean && rollup -c",
-    "codecov": "codecov"
+    "codecov": "codecov",
+    "build": "rimraf dist coverage && rollup -c"
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5"
@@ -60,6 +59,9 @@
     "rollup-plugin-dts": "^1.1.6",
     "typescript": "^3.5.3"
   },
+  "eslintIgnore": [
+    "dist"
+  ],
   "jest": {
     "collectCoverage": true
   }
