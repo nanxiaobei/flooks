@@ -1,2 +1,6 @@
+coverage
+dist
+
 .*ignore
 yarn.lock
+yarn-error.log
