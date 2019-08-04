@@ -30,6 +30,10 @@
     "test": "jest",
     "codecov": "codecov"
   },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
   "dependencies": {
     "@babel/runtime": "^7.5.5"
   },
@@ -40,7 +44,7 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
     "@types/jest": "^24.0.16",
-    "@types/node": "^12.6.8",
+    "@types/node": "^12.6.9",
     "@types/react": "^16.8.24",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
@@ -48,7 +52,9 @@
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^13.2.0",
     "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.0",
     "jest": "^24.8.0",
     "prettier": "^1.18.2",
