@@ -3,7 +3,8 @@ import dts from 'rollup-plugin-dts';
 import pkg from './package.json';
 
 const input = 'src/index.ts';
-const external = (id) => id === 'react' || id.includes('@babel/runtime');
+const deps = Object.keys(pkg.peerDependencies);
+const external = (id) => deps.includes(id) || id.includes('@babel/runtime/');
 const plugins = (useESModules) => [
   babel({
     extensions: ['.ts'],
