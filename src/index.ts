@@ -21,8 +21,12 @@ interface SetState {
 interface GetActions {
   ({ model, setState }: { model: GetModel; setState: SetState }): Actions;
 }
+export interface Model {
+  state: State;
+  actions: GetActions;
+}
 interface SetModel {
-  (name: string, model: { state: State; actions: GetActions }): void;
+  (name: string, model: Model): void;
 }
 interface UseModel {
   (modelName: string): State | Actions;
@@ -47,7 +51,7 @@ const models: Models = {};
  * Initialize a model
  */
 export const setModel: SetModel = (name, model) => {
-  let state;
+  let initialState;
   let getActions;
 
   if (process.env.NODE_ENV !== 'production') {
@@ -59,8 +63,8 @@ export const setModel: SetModel = (name, model) => {
     if (!isObject(model)) {
       throw new Error(notObject('model'));
     }
-    ({ state, actions: getActions } = model);
-    if (!isObject(state)) {
+    ({ state: initialState, actions: getActions } = model);
+    if (!isObject(initialState)) {
       throw new Error(notObject('state'));
     }
     if (typeof getActions !== 'function') {
@@ -68,7 +72,7 @@ export const setModel: SetModel = (name, model) => {
     }
   } else {
     if (name in models) return;
-    ({ state, actions: getActions } = model);
+    ({ state: initialState, actions: getActions } = model);
   }
 
   const getModel = (modelName = name) => {
@@ -112,7 +116,7 @@ export const setModel: SetModel = (name, model) => {
     };
   });
 
-  models[name] = { state, actions, setters: [] };
+  models[name] = { state: initialState, actions, setters: [] };
 };
 
 /**
