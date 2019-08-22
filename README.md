@@ -92,7 +92,7 @@ The model object needs to contain a `state` object and an `actions` function.
 const { someState, someAction } = useModel(name);
 ```
 
-A React Hook. Accepts a name, returns the initialized model with all its states and actions.
+A React Hook. Accepts a name, returns the initialized model with all its state and actions.
 
 ### ({ model, setState }) => realActions
 
