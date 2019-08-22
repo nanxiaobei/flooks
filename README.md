@@ -92,17 +92,15 @@ The model object needs to contain a `state` object and an `actions` function.
 const { someState, someAction } = useModel(name);
 ```
 
-A React Hook. Accepts a name, returns the initialized model with all its state and actions.
+A React Hook. Accepts a name, returns the initialized model with its state and actions.
 
 ### ({ model, setState }) => realActions
 
 ```js
-actions: ({ model, setState }) => ({
-  someAction() {},
-});
+actions: ({ model, setState }) => ({ someAction() {} });
 ```
 
-The argument of `actions` contains two functions, `model()` and `setState()`.
+The argument of `actions` contains two functions, `model()` and `setState()`, can be used in every action.
 
 #### model()
 
@@ -120,7 +118,7 @@ i.e. `model()` for own model, `model('other')` for other models.
 setState(payload);
 ```
 
-Used to update own model's state with the `payload` object, can't update other models'.
+Update own model's state with the `payload` object, can't update other models'.
 
 ## FAQ
 

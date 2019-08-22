@@ -92,17 +92,15 @@ model 对象中需包含 `state` 对象和 `actions` 函数。
 const { someState, someAction } = useModel(name);
 ```
 
-React Hook。接收 model 名称，返回初始化后的 model，其中包含其所有 state 和 actions。
+React Hook。接收 model 名称，返回初始化后的 model，包含其所有 state 和 actions。
 
 ### ({ model, setState }) => realActions
 
 ```js
-actions: ({ model, setState }) => ({
-  someAction() {},
-});
+actions: ({ model, setState }) => ({ someAction() {} });
 ```
 
-`actions` 参数中可拿到两个函数，`model()` 和 `setState()`。
+`actions` 参数中可拿到两个函数，`model()` 和 `setState()`，可在每个 action 中使用。
 
 #### model()
 
@@ -110,7 +108,7 @@ actions: ({ model, setState }) => ({
 const { someState, someAction } = model(name?);
 ```
 
-函数返回与 `useModel()` 相同，获取自身 model 时，`name` 可以忽略。
+返回与 `useModel()` 一致，但当获取自身 model 时，`name` 可忽略。
 
 即 `model()` 获取自身 model，`model('other')` 获取其它 model。
 
@@ -120,7 +118,7 @@ const { someState, someAction } = model(name?);
 setState(payload);
 ```
 
-用于更新自身 model state，传入 `payload` 对象。无法更新其它 model。
+更新自身 model 的 state，传入 `payload` 对象。无法更新其它 model。
 
 ## FAQ
 
