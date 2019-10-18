@@ -76,7 +76,7 @@ function Counter() {
 
 ## API
 
-### setModel()
+### 1. setModel()
 
 ```js
 setModel(name, model);
@@ -86,7 +86,7 @@ Accepts a name string and an model object, initialize the model.
 
 The model object needs to contain a `state` object and an `actions` function.
 
-### useModel()
+### 2. useModel()
 
 ```js
 const { someState, someAction } = useModel(name);
@@ -94,7 +94,7 @@ const { someState, someAction } = useModel(name);
 
 A React Hook. Accepts a name, returns the initialized model with its state and actions.
 
-### ({ model, setState }) => realActions
+### 3. ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({ someAction() {} });
@@ -102,7 +102,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 The argument of `actions` contains two functions, `model()` and `setState()`, can be used in every action.
 
-#### model()
+#### 3.1 model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -112,7 +112,7 @@ Returns the same as `useModel()`, but when get own model, `name` can be omitted.
 
 i.e. `model()` for own model, `model('other')` for other models.
 
-#### setState()
+#### 3.2 setState()
 
 ```js
 setState(payload);
@@ -122,7 +122,7 @@ Update own model's state with the `payload` object, can't update other models'.
 
 ## FAQ
 
-### Auto loading?
+### 1. Auto loading?
 
 ```js
 actions: ({ model, setState }) => ({
@@ -132,11 +132,11 @@ actions: ({ model, setState }) => ({
 
 When an action is async, `someAsyncAction.loading` can be use.
 
-### Code splitting?
+### 2. Code splitting?
 
 Supported naturally. Call `setModel()` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
 
-### Set models together?
+### 3. Set models together?
 
 ```js
 import { setModel } from 'flooks';

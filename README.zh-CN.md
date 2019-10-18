@@ -76,7 +76,7 @@ function Counter() {
 
 ## API
 
-### setModel()
+### 1. setModel()
 
 ```js
 setModel(name, model);
@@ -86,7 +86,7 @@ setModel(name, model);
 
 model 对象中需包含 `state` 对象和 `actions` 函数。
 
-### useModel()
+### 2. useModel()
 
 ```js
 const { someState, someAction } = useModel(name);
@@ -94,7 +94,7 @@ const { someState, someAction } = useModel(name);
 
 React Hook。接收 model 名称，返回初始化后的 model，包含其所有 state 和 actions。
 
-### ({ model, setState }) => realActions
+### 3. ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({ someAction() {} });
@@ -102,7 +102,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 `actions` 参数中可拿到两个函数，`model()` 和 `setState()`，可在每个 action 中使用。
 
-#### model()
+#### 3.1 model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -112,7 +112,7 @@ const { someState, someAction } = model(name?);
 
 即 `model()` 获取自身 model，`model('other')` 获取其它 model。
 
-#### setState()
+#### 3.2 setState()
 
 ```js
 setState(payload);
@@ -122,7 +122,7 @@ setState(payload);
 
 ## FAQ
 
-### 自动 loading ？
+### 1. 自动 loading ？
 
 ```js
 actions: ({ model, setState }) => ({
@@ -132,11 +132,11 @@ actions: ({ model, setState }) => ({
 
 当 action 为异步时，`someAsyncAction.loading` 可供使用。
 
-### 代码分割？
+### 2. 代码分割？
 
 天然支持。在组件中调用 `setModel()`，然后使用像 [`loadable-components`](https://github.com/smooth-code/loadable-components) 这样的库。
 
-### 统一设置 model？
+### 3. 统一设置 model？
 
 ```js
 import { setModel } from 'flooks';
