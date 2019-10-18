@@ -102,7 +102,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 The argument of `actions` contains two functions, `model()` and `setState()`, can be used in every action.
 
-#### 3.1 model()
+#### 3.1. model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -112,7 +112,7 @@ Returns the same as `useModel()`, but when get own model, `name` can be omitted.
 
 i.e. `model()` for own model, `model('other')` for other models.
 
-#### 3.2 setState()
+#### 3.2. setState()
 
 ```js
 setState(payload);

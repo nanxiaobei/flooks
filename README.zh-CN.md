@@ -102,7 +102,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 `actions` 参数中可拿到两个函数，`model()` 和 `setState()`，可在每个 action 中使用。
 
-#### 3.1 model()
+#### 3.1. model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -112,7 +112,7 @@ const { someState, someAction } = model(name?);
 
 即 `model()` 获取自身 model，`model('other')` 获取其它 model。
 
-#### 3.2 setState()
+#### 3.2. setState()
 
 ```js
 setState(payload);
