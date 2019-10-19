@@ -135,9 +135,9 @@ export const useModel: UseModel = (name) => {
   const [, setState] = useState();
   const { state, actions, setters } = models[name];
   useEffect(() => {
-    const index = setters.length;
     setters.push(setState);
     return () => {
+      const index = setters.indexOf(setState)
       setters.splice(index, 1);
     };
   }, [setters]);
