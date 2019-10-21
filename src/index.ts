@@ -29,12 +29,13 @@ interface SetModel {
   (name: string, model: Model): void;
 }
 interface UseModel {
-  (modelName: string): State | Actions;
+  (modelName: string, onlyActions?: boolean): State | Actions;
 }
 
 /**
  * Utils
  */
+const notBoolean = (key: string): string => `"${key}" must be a boolean`;
 const notString = (key: string): string => `"${key}" must be a string`;
 const notObject = (key: string): string => `"${key}" must be an object`;
 const notFunction = (key: string): string => `"${key}" must be a function`;
@@ -122,10 +123,13 @@ export const setModel: SetModel = (name, model) => {
 /**
  * Use a initialized model
  */
-export const useModel: UseModel = (name) => {
+export const useModel: UseModel = (name, onlyActions) => {
   if (process.env.NODE_ENV !== 'production') {
     if (typeof name !== 'string') {
       throw new Error(notString('name'));
+    }
+    if (typeof onlyActions !== 'undefined' && typeof onlyActions !== 'boolean') {
+      throw new Error(notBoolean('onlyActions'));
     }
     if (!(name in models)) {
       throw new Error(modelNotExist(name));
@@ -135,9 +139,10 @@ export const useModel: UseModel = (name) => {
   const [, setState] = useState();
   const { state, actions, setters } = models[name];
   useEffect(() => {
+    if (onlyActions) return undefined;
     setters.push(setState);
     return () => {
-      const index = setters.indexOf(setState)
+      const index = setters.indexOf(setState);
       setters.splice(index, 1);
     };
   }, [setters]);

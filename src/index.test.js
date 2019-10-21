@@ -25,21 +25,25 @@ test('setModel', () => {
   process.env.NODE_ENV = 'test';
 
   expect(() => {
-    setModel('modelType');
+    setModel('noModel');
   }).toThrow();
 
   expect(() => {
-    setModel('modelKeysType', {});
+    setModel('noModelKeys', {});
   }).toThrow();
 
   expect(() => {
-    setModel('modelKeysType', { state: {} });
+    setModel('noModelActions', { state: {} });
   }).toThrow();
 });
 
 test('useModel', () => {
   expect(() => {
     useModel();
+  }).toThrow();
+
+  expect(() => {
+    useModel('someModel', null);
   }).toThrow();
 
   expect(() => {
@@ -71,7 +75,8 @@ test('component', (done) => {
   };
   setModel('counter', model);
   function Counter() {
-    const { count, showError, increase, increaseAsync } = useModel('counter');
+    const { count } = useModel('counter');
+    const { showError, increase, increaseAsync } = useModel('counter', true);
     return (
       <>
         <p>{count}</p>
