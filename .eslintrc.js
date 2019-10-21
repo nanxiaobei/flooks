@@ -4,6 +4,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
     project: './tsconfig.json',
+    createDefaultProgram: true, // https://github.com/typescript-eslint/typescript-eslint/issues/967
   },
   plugins: ['@typescript-eslint'],
   extends: [
