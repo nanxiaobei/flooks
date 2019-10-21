@@ -89,10 +89,12 @@ model 对象中需包含 `state` 对象和 `actions` 函数。
 ### 2. useModel()
 
 ```js
-const { someState, someAction } = useModel(name);
+const { someState, someAction } = useModel(name, onlyActions?);
 ```
 
 React Hook。接收 model 名称，返回初始化后的 model，包含其所有 state 和 actions。
+
+若只用到 actions，`onlyActions` 可传入 `true` 以阻止组件重新渲染。
 
 ### 3. ({ model, setState }) => realActions
 
