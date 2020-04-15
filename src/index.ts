@@ -148,3 +148,21 @@ export const useModel: UseModel = (name, onlyActions) => {
   }, [setters]);
   return { ...state, ...actions };
 };
+
+
+/**
+ * Get a initialized model outside component
+ */
+export const getModel: GetModel = (modelName) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof modelName !== 'string') {
+      throw new Error(notString('modelName'));
+    }
+    if (!(modelName in models)) {
+      throw new Error(modelNotExist(modelName));
+    }
+  }
+
+  const { state, actions } = models[modelName || ''];
+  return { ...state, ...actions };
+};

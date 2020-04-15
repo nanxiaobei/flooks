@@ -96,7 +96,17 @@ React Hook。接收 model 名称，返回初始化后的 model，包含其所有
 
 若只用到 actions，`onlyActions` 可传入 `true` 以阻止组件重新渲染。
 
-### 3. ({ model, setState }) => realActions
+### 3. getModel()
+
+```js
+const { someState, someAction } = getModel(name);
+```
+
+接收 model 名称，返回初始化后的 model，包含其所有 state 和 actions。
+
+不同于 `useModel` 通常只能在组件内部使用 [[Hook规则]](https://zh-hans.reactjs.org/docs/hooks-rules.html)，`getModel` 可以用于组件外部更新数据。
+
+### 4. ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({ someAction() {} });
@@ -104,7 +114,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 `actions` 参数中可拿到两个函数，`model()` 和 `setState()`，可在每个 action 中使用。
 
-#### 3.1. model()
+#### 4.1. model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -114,7 +124,7 @@ const { someState, someAction } = model(name?);
 
 即 `model()` 获取自身 model，`model('other')` 获取其它 model。
 
-#### 3.2. setState()
+#### 4.2. setState()
 
 ```js
 setState(payload);

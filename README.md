@@ -96,7 +96,17 @@ A React Hook. Accepts a name, returns the initialized model with its state and a
 
 If only use actions, pass `true` for `onlyActions` to avoid a component rerender.
 
-### 3. ({ model, setState }) => realActions
+### 3. getModel()
+
+```js
+const { someState, someAction } = getModel(modelName);
+```
+
+Accepts a name, returns the initialized model with its state and actions.
+
+Unlike `useModel` which can only be used inside the function component [[Rules of Hooks]](https://reactjs.org/docs/hooks-rules.html),` getModel` can be used to update data outside the component.
+
+### 4. ({ model, setState }) => realActions
 
 ```js
 actions: ({ model, setState }) => ({ someAction() {} });
@@ -104,7 +114,7 @@ actions: ({ model, setState }) => ({ someAction() {} });
 
 The argument of `actions` contains two functions, `model()` and `setState()`, can be used in every action.
 
-#### 3.1. model()
+#### 4.1. model()
 
 ```js
 const { someState, someAction } = model(name?);
@@ -114,7 +124,7 @@ Returns the same as `useModel()`, but when get own model, `name` can be omitted.
 
 i.e. `model()` for own model, `model('other')` for other models.
 
-#### 3.2. setState()
+#### 4.2. setState()
 
 ```js
 setState(payload);
