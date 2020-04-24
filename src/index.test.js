@@ -1,107 +1,87 @@
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import { setModel, useModel } from './index';
+import { use, get, set } from './index';
 
 configure({ adapter: new Adapter() });
 
-beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation((...args) => {
-    if (args[0].includes('Warning: An update to %s inside a test was not wrapped in act')) return;
-    console.error(...args);
+const mockConsole = (msg) => {
+  if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
+};
+console.error = jest.fn(mockConsole);
+
+const devProdEnv = (fn) => {
+  fn();
+  process.env.NODE_ENV = 'production';
+  fn();
+  process.env.NODE_ENV = 'test';
+};
+
+test('get', () => {
+  expect(() => {
+    get();
+  }).toThrow();
+});
+
+test('set', () => {
+  devProdEnv(() => {
+    expect(() => {
+      set();
+    }).toThrow();
   });
 });
 
-test('setModel', () => {
-  expect(() => {
-    setModel();
-  }).toThrow();
-
-  const model = { state: {}, actions: () => ({}) };
-  setModel('exist', model);
-  setModel('exist', model);
-  process.env.NODE_ENV = 'production';
-  setModel('exist', model);
-  process.env.NODE_ENV = 'test';
-
-  expect(() => {
-    setModel('noModel');
-  }).toThrow();
-
-  expect(() => {
-    setModel('noModelKeys', {});
-  }).toThrow();
-
-  expect(() => {
-    setModel('noModelActions', { state: {} });
-  }).toThrow();
+test('use', () => {
+  devProdEnv(() => {
+    expect(() => {
+      use();
+    }).toThrow();
+  });
 });
 
-test('useModel', () => {
-  expect(() => {
-    useModel();
-  }).toThrow();
-
-  expect(() => {
-    useModel('someModel', null);
-  }).toThrow();
-
-  expect(() => {
-    useModel('modelNotExist');
-  }).toThrow();
-});
-
-test('component', (done) => {
-  // "production" start
-  process.env.NODE_ENV = 'production';
-  const model = {
-    state: {
-      count: 0,
+test('render', (done) => {
+  const useCounter = use({
+    count: 0,
+    add() {
+      const { count } = get();
+      set({ count: count + 1 });
     },
-    actions: ({ model, setState }) => ({
-      showError() {
-        setState();
-      },
-      increase() {
-        const { count } = model();
-        setState({ count: count + 1 });
-      },
-      async increaseAsync() {
-        const { increase } = model();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        increase();
-      },
-    }),
-  };
-  setModel('counter', model);
+    async addAsync() {
+      const { add } = get();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      add();
+    },
+  });
+  const useOutErr = use({
+    addOutErr() {
+      const { add } = useCounter();
+      add();
+      set();
+    },
+  });
+
   function Counter() {
-    const { count } = useModel('counter');
-    const { showError, increase, increaseAsync } = useModel('counter', true);
+    const { count } = useCounter('count');
+    const { add, addAsync } = useCounter();
+    const { addOutErr } = useOutErr('addOutErr');
     return (
       <>
         <p>{count}</p>
-        <button className="show-error" onClick={showError}>
-          show error
-        </button>
-        <button className="increase" onClick={increase}>
-          +1
-        </button>
-        <button className="increase-async" onClick={increaseAsync}>
-          +1 async{increaseAsync.loading && '...'}
-        </button>
+        <button id="add" onClick={add} />
+        <button id="addAsync" onClick={addAsync} />
+        <button id="addOutErr" onClick={addOutErr} />
       </>
     );
   }
-  const wrapper = mount(<Counter />);
-  wrapper.find('.show-error').simulate('click');
-  process.env.NODE_ENV = 'test';
-  // "production" end
 
+  const wrapper = mount(<Counter />);
+
+  wrapper.find('#add').simulate('click');
+  wrapper.find('#addAsync').simulate('click');
   expect(() => {
-    wrapper.find('.show-error').simulate('click');
+    wrapper.find('#addOutErr').simulate('click');
   }).toThrow();
-  wrapper.find('.increase').simulate('click');
-  wrapper.find('.increase-async').simulate('click');
+
   setTimeout(() => {
     wrapper.unmount();
     done();

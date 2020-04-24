@@ -1,150 +1,100 @@
 import { useState, useEffect } from 'react';
 
-interface State {
-  [stateName: string]: any;
-}
-interface Actions {
-  [actionName: string]: { (...args: any[]): any; loading?: boolean };
-}
-interface Setter {
-  (state: State | ((prevState: State) => State)): void;
-}
-interface Models {
-  [modelName: string]: { state: State; actions: Actions; setters: Setter[] };
-}
-interface GetModel {
-  (modelName?: string): State | Actions;
-}
-interface SetState {
-  (state: State): void;
-}
-interface GetActions {
-  ({ model, setState }: { model: GetModel; setState: SetState }): Actions;
-}
-export interface Model {
-  state: State;
-  actions: GetActions;
-}
-interface SetModel {
-  (name: string, model: Model): void;
-}
-interface UseModel {
-  (modelName: string, onlyActions?: boolean): State | Actions;
-}
+const run = Symbol();
 
-/**
- * Utils
- */
-const notBoolean = (key: string): string => `"${key}" must be a boolean`;
-const notString = (key: string): string => `"${key}" must be a string`;
-const notObject = (key: string): string => `"${key}" must be an object`;
-const notFunction = (key: string): string => `"${key}" must be a function`;
-const modelNotExist = (name: string): string => `"${name}" model dose not exist`;
+type Model = { [key: string]: any };
+type Getter = () => Model;
+type Setter = (payload: Model) => void;
+type Stack = Model & { [run]: { keys: string[]; setModel: Setter }[] }[];
+type User = (model: Model) => (...keys: string[]) => Model;
 
-const isObject = (data: any): boolean => Object.prototype.toString.call(data) === '[object Object]';
+const errMisUse = (api: string): string => `Please call \`${api}()\` inside a model`;
+const errNotObj = (key: string): string => `\`${key}\` should be an object`;
+const notObj = (data: any): boolean => Object.prototype.toString.call(data) !== '[object Object]';
+const warn = (msg: string) => {
+  throw new Error(msg);
+};
 
-/**
- * Initialized models
- */
-const models: Models = {};
+const stack: Stack = [];
 
-/**
- * Initialize a model
- */
-export const setModel: SetModel = (name, model) => {
-  let initialState;
-  let getActions;
+export const get: Getter = () => {
+  const currentModel = stack[0];
+  if (process.env.NODE_ENV !== 'production' && notObj(currentModel)) warn(errMisUse('get'));
 
+  return currentModel;
+};
+
+export const set: Setter = (payload) => {
+  const currentModel = stack[0];
   if (process.env.NODE_ENV !== 'production') {
-    if (typeof name !== 'string') {
-      throw new Error(notString('name'));
-    }
-    if (name in models) return;
-
-    if (!isObject(model)) {
-      throw new Error(notObject('model'));
-    }
-    ({ state: initialState, actions: getActions } = model);
-    if (!isObject(initialState)) {
-      throw new Error(notObject('state'));
-    }
-    if (typeof getActions !== 'function') {
-      throw new Error(notFunction('actions'));
-    }
-  } else {
-    if (name in models) return;
-    ({ state: initialState, actions: getActions } = model);
+    if (notObj(currentModel)) warn(errMisUse('set'));
+    if (notObj(payload)) warn(errNotObj('payload'));
   }
 
-  const getModel = (modelName = name) => {
-    const { state, actions } = models[modelName];
-    return { ...state, ...actions };
+  const newModel = { ...Object.assign(currentModel, payload) };
+  const subs = currentModel[run];
+  const updateKeys = Object.keys(payload);
+  subs.forEach(({ keys, setModel }) => {
+    if (updateKeys.some((key) => keys.includes(key))) setModel(newModel);
+  });
+};
+
+export const use: User = (model) => {
+  if (process.env.NODE_ENV !== 'production' && notObj(model)) warn(errNotObj('model'));
+  const litModel = Object.setPrototypeOf({}, Object.defineProperty({}, run, { value: [] }));
+
+  const setLoading = (key: string, loading: boolean) => {
+    litModel[key].loading = loading;
+    set({ [key]: litModel[key] });
   };
-  const setState: SetState = (payload) => {
-    if (process.env.NODE_ENV !== 'production') {
-      if (!isObject(payload)) {
-        throw new Error(notObject('payload'));
-      }
+
+  Object.entries(model).forEach(([key, val]) => {
+    if (typeof val !== 'function') {
+      litModel[key] = val;
+      return;
     }
-    const { state, setters } = models[name];
-    const newState = { ...state, ...payload };
-    models[name].state = newState;
-    setters.forEach((setter) => {
-      setter(newState);
-    });
-  };
-
-  const actions: Actions = {};
-  const setLoading = (actionName: string, showLoading: boolean) => {
-    actions[actionName].loading = showLoading;
-    setState({});
-  };
-
-  const rawActions = getActions({ model: getModel, setState });
-  Object.entries(rawActions).forEach(([actionName, rawAction]) => {
-    actions[actionName] = (...args) => {
-      const res = rawAction(...args);
-      if (!res || typeof res.then !== 'function') return res;
+    litModel[key] = (...args: any) => {
+      stack.unshift(litModel);
+      const res = val(...args);
+      if (!res || typeof res.then !== 'function') {
+        stack.shift();
+        return res;
+      }
       return new Promise((resolve, reject) => {
-        setLoading(actionName, true);
-        res
-          .then(resolve)
-          .catch(reject)
-          .finally(() => {
-            setLoading(actionName, false);
-          });
+        setLoading(key, true);
+        const pro = res.then(resolve).catch(reject);
+        pro.finally(() => {
+          setLoading(key, false);
+          stack.shift();
+        });
       });
     };
   });
 
-  models[name] = { state: initialState, actions, setters: [] };
+  return (...keys) => {
+    try {
+      const [, setModel] = useState();
+      const empty = keys.length === 0;
+
+      useEffect(() => {
+        const subs = litModel[run];
+        const item = { keys: empty ? Object.keys(litModel) : keys, setModel };
+        subs.push(item);
+        return () => {
+          subs.splice(subs.indexOf(item), 1);
+        };
+      }, []);
+
+      if (empty) return litModel;
+
+      return keys.reduce((obj: Model, key) => {
+        obj[key] = litModel[key];
+        return obj;
+      }, {});
+    } catch {
+      return litModel;
+    }
+  };
 };
 
-/**
- * Use a initialized model
- */
-export const useModel: UseModel = (name, onlyActions) => {
-  if (process.env.NODE_ENV !== 'production') {
-    if (typeof name !== 'string') {
-      throw new Error(notString('name'));
-    }
-    if (typeof onlyActions !== 'undefined' && typeof onlyActions !== 'boolean') {
-      throw new Error(notBoolean('onlyActions'));
-    }
-    if (!(name in models)) {
-      throw new Error(modelNotExist(name));
-    }
-  }
-
-  const [, setState] = useState();
-  const { state, actions, setters } = models[name];
-  useEffect(() => {
-    if (onlyActions) return undefined;
-    setters.push(setState);
-    return () => {
-      const index = setters.indexOf(setState);
-      setters.splice(index, 1);
-    };
-  }, [setters]);
-  return { ...state, ...actions };
-};
+export default { use, get, set };
