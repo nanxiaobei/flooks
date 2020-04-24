@@ -17,6 +17,46 @@ English | [简体中文](./README.zh-CN.md)
 
 ---
 
+<details>
+<summary>flooks 2.0 (next generation)</summary>
+
+```jsx harmony
+import { get, set, use } from 'flooks';
+
+const counter = {
+  count: 0,
+  add() {
+    const { count } = get();
+    set({ count: count + 1 });
+  },
+  sub() {
+    const { count } = get();
+    set({ count: count - 1 });
+  },
+  async addLater() {
+    const { add } = get();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    add();
+  },
+};
+
+const useCounter = use(counter);
+
+function Counter() {
+  const { count, add, sub, addLater } = useCounter();
+  return (
+    <>
+      <p>{count}</p>
+      <button onClick={add}>+</button>
+      <button onClick={sub}>-</button>
+      <button onClick={addLater}>+ ⌛ {addLater.loading && '...'}</button>
+    </>
+  );
+}
+```
+
+</details>
+
 ## Install
 
 ```sh
