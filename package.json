@@ -10,7 +10,6 @@
     "store",
     "model",
     "state",
-    "actions",
     "flooks"
   ],
   "license": "MIT",
