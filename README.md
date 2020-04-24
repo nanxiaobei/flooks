@@ -1,6 +1,6 @@
 # 🍸 flooks
 
-A state manager for React Hooks. Maybe the simplest. ^\_^
+A state manager for React Hooks. Maybe the simplest.
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -18,7 +18,17 @@ English | [简体中文](./README.zh-CN.md)
 ---
 
 <details>
-<summary>flooks 2.0 (next generation)</summary>
+<summary>
+<strong>Take a look at flooks 2.0 💭 (Next generation of simplicity 🤳)</strong>
+</summary>
+
+---
+
+The Simplest API of only `get`, `set`, `use`, like it? try it now.
+
+```shell script
+yarn add flooks@next
+```
 
 ```jsx harmony
 import { get, set, use } from 'flooks';
