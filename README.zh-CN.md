@@ -1,9 +1,9 @@
-# 🍸 flooks <sup><sup><sub><sub>福禄克斯</sub></sub></sup></sup>
+# 🍸 flooks <sup><sup><sub><sub>伏鹿可思</sub></sub></sup></sup>
 
-一个 React Hooks 状态管理器。也许是最简单的那个。^\_^
+一个 React Hooks 状态管理器。也许是最简单的那个。
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
-[![Travis (.org)](https://img.shields.io/travis/nanxiaobei/flooks?style=flat-square)](https://travis-ci.org/nanxiaobei/flooks)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
 [![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)](https://codecov.io/gh/nanxiaobei/flooks)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/flooks?style=flat-square)](https://bundlephobia.com/result?p=flooks)
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
@@ -16,6 +16,56 @@
 [English](./README.md) | 简体中文
 
 ---
+
+<details>
+<summary>
+<strong>看一眼 flooks 2.0 💭 下一代简洁设计 🤳）</strong>
+</summary>
+
+---
+
+最简单的 API，只有 `get`、`set`、`use`，怎么样？现在就试试吧。
+
+```shell script
+yarn add flooks@next
+```
+
+```jsx harmony
+import { get, set, use } from 'flooks';
+
+const counter = {
+  count: 0,
+  add() {
+    const { count } = get();
+    set({ count: count + 1 });
+  },
+  sub() {
+    const { count } = get();
+    set({ count: count - 1 });
+  },
+  async addLater() {
+    const { add } = get();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    add();
+  },
+};
+
+const useCounter = use(counter);
+
+function Counter() {
+  const { count, add, sub, addLater } = useCounter();
+  return (
+    <>
+      <p>{count}</p>
+      <button onClick={add}>+</button>
+      <button onClick={sub}>-</button>
+      <button onClick={addLater}>+ ⌛ {addLater.loading && '...'}</button>
+    </>
+  );
+}
+```
+
+</details>
 
 ## 安装
 
