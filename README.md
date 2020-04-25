@@ -24,14 +24,16 @@ English | [简体中文](./README.zh-CN.md)
 
 ---
 
-The Simplest API of only `get`, `set`, `use`, like it? try it now.
+The Simplest API of only `use`, `get`, `set`, like it? try it now.
+
+[▶️ Live demo](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ```shell script
 yarn add flooks@next
 ```
 
 ```jsx harmony
-import { get, set, use } from 'flooks';
+import { use, get, set } from 'flooks';
 
 const counter = {
   count: 0,

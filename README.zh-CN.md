@@ -24,14 +24,16 @@
 
 ---
 
-最简单的 API，只有 `get`、`set`、`use`，怎么样？现在就试试吧。
+最简单的 API，只有 `use`、`get`、`set`，怎么样？现在就试试吧。
+
+[▶️ 在线示例](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ```shell script
 yarn add flooks@next
 ```
 
 ```jsx harmony
-import { get, set, use } from 'flooks';
+import { use, get, set } from 'flooks';
 
 const counter = {
   count: 0,
