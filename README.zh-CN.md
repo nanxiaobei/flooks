@@ -61,7 +61,7 @@ function Counter() {
       <p>{count}</p>
       <button onClick={add}>+</button>
       <button onClick={sub}>-</button>
-      <button onClick={addLater}>+ ⌛ {addLater.loading && '...'}</button>
+      <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
     </>
   );
 }
