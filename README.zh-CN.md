@@ -24,7 +24,7 @@
 
 ---
 
-最简单的 API，只有 `use`、`get`、`set`，怎么样？现在就试试吧。
+最简单的 API，只有 `now`、`use`，怎么样？现在就试试吧。
 
 [▷ 在线示例](https://codesandbox.io/s/flooks-20-e4fsq)
 
@@ -33,20 +33,20 @@ yarn add flooks@next
 ```
 
 ```jsx harmony
-import { use, get, set } from 'flooks';
+import { now, use } from 'flooks';
 
 const useCounter = use({
   count: 0,
   add() {
-    const { count } = get();
-    set({ count: count + 1 });
+    const { count } = now();
+    now({ count: count + 1 });
   },
   sub() {
-    const { count } = get();
-    set({ count: count - 1 });
+    const { count } = now();
+    now({ count: count - 1 });
   },
   async addLater() {
-    const { add } = get();
+    const { add } = now();
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
