@@ -26,7 +26,7 @@ English | [简体中文](./README.zh-CN.md)
 
 The Simplest API of only `use`, `get`, `set`, like it? try it now.
 
-[▶️ Live demo](https://codesandbox.io/s/flooks-20-e4fsq)
+[▷ Live demo](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ```shell script
 yarn add flooks@next
@@ -35,7 +35,7 @@ yarn add flooks@next
 ```jsx harmony
 import { use, get, set } from 'flooks';
 
-const counter = {
+const useCounter = use({
   count: 0,
   add() {
     const { count } = get();
@@ -50,9 +50,7 @@ const counter = {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
-};
-
-const useCounter = use(counter);
+});
 
 function Counter() {
   const { count, add, sub, addLater } = useCounter();
