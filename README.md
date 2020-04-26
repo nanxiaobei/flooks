@@ -1,6 +1,6 @@
 # 🍸 flooks
 
-A state manager for React Hooks. Maybe the simplest.
+A state manager for React Hooks, maybe the simplest.
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
