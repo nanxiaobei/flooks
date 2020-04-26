@@ -21,7 +21,7 @@ const stack: Stack = [];
 export const now: Now = (payload) => {
   const currentModel = stack[0];
   const __DEV__ = isDev(process.env.NODE_ENV);
-  if (__DEV__) if (nonObj(currentModel)) err(MIS_USE('set'));
+  if (__DEV__) if (nonObj(currentModel)) err(MIS_USE('now'));
 
   if (payload === undefined) return currentModel;
 
