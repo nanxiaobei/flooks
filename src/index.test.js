@@ -1,38 +1,32 @@
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import { use, get, set } from './index';
+import { now, use } from './index';
 
 configure({ adapter: new Adapter() });
 
-const mockConsole = (msg) => {
+console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
-};
-console.error = jest.fn(mockConsole);
+});
 
-const devProdEnv = (fn) => {
-  fn();
+const runProdEnv = (fn) => {
   process.env.NODE_ENV = 'production';
   fn();
   process.env.NODE_ENV = 'test';
 };
 
-test('get', () => {
+test('now', () => {
   expect(() => {
-    get();
+    now();
   }).toThrow();
 });
 
-test('set', () => {
-  devProdEnv(() => {
-    expect(() => {
-      set();
-    }).toThrow();
-  });
-});
-
 test('use', () => {
-  devProdEnv(() => {
+  expect(() => {
+    use();
+  }).toThrow();
+
+  runProdEnv(() => {
     expect(() => {
       use();
     }).toThrow();
@@ -43,27 +37,27 @@ test('render', (done) => {
   const useCounter = use({
     count: 0,
     add() {
-      const { count } = get();
-      set({ count: count + 1 });
+      const { count } = now();
+      now({ count: count + 1 });
     },
     async addAsync() {
-      const { add } = get();
+      const { add } = now();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       add();
     },
   });
-  const useOutErr = use({
+  const useOuter = use({
     addOutErr() {
       const { add } = useCounter();
       add();
-      set();
+      now([]);
     },
   });
 
   function Counter() {
     const { count } = useCounter('count');
     const { add, addAsync } = useCounter();
-    const { addOutErr } = useOutErr('addOutErr');
+    const { addOutErr } = useOuter('addOutErr');
     return (
       <>
         <p>{count}</p>
@@ -77,7 +71,9 @@ test('render', (done) => {
   const wrapper = mount(<Counter />);
 
   wrapper.find('#add').simulate('click');
-  wrapper.find('#addAsync').simulate('click');
+  runProdEnv(() => {
+    wrapper.find('#addAsync').simulate('click');
+  });
   expect(() => {
     wrapper.find('#addOutErr').simulate('click');
   }).toThrow();
