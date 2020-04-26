@@ -5,13 +5,13 @@ const run = Symbol();
 type Model = { [key: string]: any };
 type Getter = () => Model;
 type Setter = (payload: Model) => void;
-type Stack = Model & { [run]: { keys: string[]; setModel: Setter }[] }[];
-type User = (model: Model) => (...keys: string[]) => Model;
+type Stack = (Model & { [run]: { keys: string[]; setModel: Setter }[] })[];
+type Use = (model: Model) => (...keys: string[]) => Model;
 
-const errMisUse = (api: string): string => `Please call \`${api}()\` inside a model`;
-const errNotObj = (key: string): string => `\`${key}\` should be an object`;
-const notObj = (data: any): boolean => Object.prototype.toString.call(data) !== '[object Object]';
-const warn = (msg: string) => {
+const MIS_USE = (api: string): string => `Please call \`${api}()\` inside a model`;
+const NOT_OBJ = (key: string): string => `\`${key}\` should be an object`;
+const nonObj = (data: any): boolean => Object.prototype.toString.call(data) !== '[object Object]';
+const err = (msg: string) => {
   throw new Error(msg);
 };
 
@@ -19,18 +19,16 @@ const stack: Stack = [];
 
 export const get: Getter = () => {
   const currentModel = stack[0];
-  if (process.env.NODE_ENV !== 'production' && notObj(currentModel)) warn(errMisUse('get'));
-
+  if (process.env.NODE_ENV !== 'production') if (nonObj(currentModel)) err(MIS_USE('get'));
   return currentModel;
 };
 
 export const set: Setter = (payload) => {
   const currentModel = stack[0];
   if (process.env.NODE_ENV !== 'production') {
-    if (notObj(currentModel)) warn(errMisUse('set'));
-    if (notObj(payload)) warn(errNotObj('payload'));
+    if (nonObj(currentModel)) err(MIS_USE('set'));
+    if (nonObj(payload)) err(NOT_OBJ('payload'));
   }
-
   const newModel = { ...Object.assign(currentModel, payload) };
   const subs = currentModel[run];
   const updateKeys = Object.keys(payload);
@@ -39,9 +37,10 @@ export const set: Setter = (payload) => {
   });
 };
 
-export const use: User = (model) => {
-  if (process.env.NODE_ENV !== 'production' && notObj(model)) warn(errNotObj('model'));
-  const litModel = Object.setPrototypeOf({}, Object.defineProperty({}, run, { value: [] }));
+export const use: Use = (model) => {
+  if (process.env.NODE_ENV !== 'production') if (nonObj(model)) err(NOT_OBJ('model'));
+  const litProto = Object.defineProperty({}, run, { value: [] });
+  const litModel = Object.setPrototypeOf({}, litProto);
 
   const setLoading = (key: string, loading: boolean) => {
     litModel[key].loading = loading;
@@ -96,5 +95,3 @@ export const use: User = (model) => {
     }
   };
 };
-
-export default { use, get, set };
