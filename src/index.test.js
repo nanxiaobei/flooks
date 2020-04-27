@@ -1,7 +1,7 @@
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import { now, use } from './index';
+import use from './index';
 
 configure({ adapter: new Adapter() });
 
@@ -9,50 +9,46 @@ console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
 });
 
-const runProdEnv = (fn) => {
+const runNoCheck = (fn) => {
   process.env.NODE_ENV = 'production';
   fn();
   process.env.NODE_ENV = 'test';
 };
 
-test('now', () => {
-  expect(() => {
-    now();
-  }).toThrow();
-});
-
 test('use', () => {
   expect(() => {
     use();
   }).toThrow();
-
-  runProdEnv(() => {
-    expect(() => {
-      use();
-    }).toThrow();
+  expect(() => {
+    use([]);
+  }).toThrow();
+  runNoCheck(() => {
+    use();
   });
 });
 
 test('render', (done) => {
-  const useCounter = use({
+  const counter = use({
     count: 0,
     add() {
-      const { count } = now();
-      now({ count: count + 1 });
+      const { count } = use();
+      use({ count: count + 1 });
     },
     async addAsync() {
-      const { add } = now();
+      const { add } = use();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       add();
     },
   });
-  const useOuter = use({
+  const outer = use({
     addOutErr() {
-      const { add } = useCounter();
+      const { add } = counter();
       add();
-      now([]);
+      use([]);
     },
   });
+  const useCounter = counter;
+  const useOuter = outer;
 
   function Counter() {
     const { count } = useCounter('count');
@@ -71,7 +67,7 @@ test('render', (done) => {
   const wrapper = mount(<Counter />);
 
   wrapper.find('#add').simulate('click');
-  runProdEnv(() => {
+  runNoCheck(() => {
     wrapper.find('#addAsync').simulate('click');
   });
   expect(() => {

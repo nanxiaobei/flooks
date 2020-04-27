@@ -5,43 +5,49 @@ const run = Symbol();
 type Model = { [key: string]: any };
 type Sub = { keys: string[]; setModel: (payload: Model) => void };
 type Stack = (Model & { [run]: Sub[] })[];
-type Now = (payload?: undefined | Model) => any;
-type Use = (model: Model) => (...keys: string[]) => Model;
+type Use = (model?: Model) => any;
 
-const MIS_USE = (api: string): string => `Please call \`${api}()\` inside a model`;
-const NOT_OBJ = (key: string): string => `\`${key}\` should be an object`;
-const isDev = (env: string | undefined): boolean => env !== 'production';
-const nonObj = (data: any): boolean => Object.prototype.toString.call(data) !== '[object Object]';
-const err = (msg: string) => {
+const MIS_USE = (act: string): string => `To ${act} a model, param to use() should be an object`;
+const isObj = (val: any): boolean => Object.prototype.toString.call(val) === '[object Object]';
+const showErr = (msg: string) => {
   throw new Error(msg);
 };
 
 const stack: Stack = [];
 
-export const now: Now = (payload) => {
+const use: Use = (model) => {
+  const __DEV__ = process.env.NODE_ENV !== 'production';
   const currentModel = stack[0];
-  const __DEV__ = isDev(process.env.NODE_ENV);
-  if (__DEV__) if (nonObj(currentModel)) err(MIS_USE('now'));
 
-  if (payload === undefined) return currentModel;
+  // getter
+  if (model === undefined) {
+    if (currentModel) return currentModel;
+    if (__DEV__) showErr(MIS_USE('create'));
+    return;
+  }
 
-  if (__DEV__) if (nonObj(payload)) err(NOT_OBJ('payload'));
-  const newModel = { ...Object.assign(currentModel, payload) };
-  const subs = currentModel[run];
-  const updateKeys = Object.keys(payload);
-  subs.forEach(({ keys, setModel }) => {
-    if (updateKeys.some((key) => keys.includes(key))) setModel(newModel);
-  });
-};
+  // setter
+  if (currentModel) {
+    if (__DEV__ && !isObj(model)) showErr(MIS_USE('set'));
 
-export const use: Use = (model) => {
-  if (isDev(process.env.NODE_ENV)) if (nonObj(model)) err(NOT_OBJ('model'));
+    const newModel = { ...Object.assign(currentModel, model) };
+    const subs = currentModel[run];
+    const updateKeys = Object.keys(model);
+    subs.forEach(({ keys, setModel }) => {
+      if (updateKeys.some((key) => keys.includes(key))) setModel(newModel);
+    });
+    return;
+  }
+
+  // creator
+  if (__DEV__ && !isObj(model)) showErr(MIS_USE('create'));
+
   const litProto = Object.defineProperty({}, run, { value: [] });
   const litModel = Object.setPrototypeOf({}, litProto);
 
   const setLoading = (key: string, loading: boolean) => {
     litModel[key].loading = loading;
-    now({ [key]: litModel[key] });
+    use({ [key]: litModel[key] });
   };
 
   Object.entries(model).forEach(([key, val]) => {
@@ -67,7 +73,7 @@ export const use: Use = (model) => {
     };
   });
 
-  return (...keys) => {
+  return (...keys: string[]) => {
     try {
       const [, setModel] = useState();
       const empty = keys.length === 0;
@@ -92,3 +98,5 @@ export const use: Use = (model) => {
     }
   };
 };
+
+export default use;
