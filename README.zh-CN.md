@@ -9,7 +9,7 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-🍰 简洁 | 🍭 自动 loading | 🍕 模块化 | 🥂 灵动
+⏳ 自动 loading 处理 | 🧩 模块化 | 🔌 按需重渲染
 
 ---
 

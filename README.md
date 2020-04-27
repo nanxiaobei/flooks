@@ -9,7 +9,7 @@ A state manager for React Hooks, maybe the simplest.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-🍰 Simple | 🍭 Auto loading | 🍕 Modules | 🥂 Flexible
+⏳ Auto loading | 🧩 Modules | 🔌 Rerender control
 
 ---
 
