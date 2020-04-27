@@ -24,7 +24,7 @@ English | [简体中文](./README.zh-CN.md)
 
 ---
 
-The Simplest API of only `now`, `use`, like it? try it now.
+The simplest API of only `use`, like it? try it now.
 
 [▷ Live demo](https://codesandbox.io/s/flooks-20-e4fsq)
 
@@ -33,20 +33,20 @@ yarn add flooks@next
 ```
 
 ```jsx harmony
-import { now, use } from 'flooks';
+import use from 'flooks';
 
 const useCounter = use({
   count: 0,
   add() {
-    const { count } = now();
-    now({ count: count + 1 });
+    const { count } = use();
+    use({ count: count + 1 });
   },
   sub() {
-    const { count } = now();
-    now({ count: count - 1 });
+    const { count } = use();
+    use({ count: count - 1 });
   },
   async addLater() {
-    const { add } = now();
+    const { add } = use();
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
