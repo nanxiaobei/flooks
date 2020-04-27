@@ -22,7 +22,7 @@ const use: Use = (model) => {
   // getter
   if (model === undefined) {
     if (currentModel) return currentModel;
-    if (__DEV__) showErr(MIS_USE('create'));
+    if (__DEV__) showErr(MIS_USE('initialize'));
     return;
   }
 
@@ -39,8 +39,8 @@ const use: Use = (model) => {
     return;
   }
 
-  // creator
-  if (__DEV__ && !isObj(model)) showErr(MIS_USE('create'));
+  // initializer
+  if (__DEV__ && !isObj(model)) showErr(MIS_USE('initialize'));
 
   const litProto = Object.defineProperty({}, run, { value: [] });
   const litModel = Object.setPrototypeOf({}, litProto);
