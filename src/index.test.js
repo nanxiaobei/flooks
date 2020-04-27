@@ -1,5 +1,5 @@
 import React from 'react';
-import { configure, mount } from 'enzyme';
+import { configure, shallow, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import use from './index';
 
@@ -9,7 +9,7 @@ console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
 });
 
-const runNoCheck = (fn) => {
+const withoutCheck = (fn) => {
   process.env.NODE_ENV = 'production';
   fn();
   process.env.NODE_ENV = 'test';
@@ -22,7 +22,7 @@ test('use', () => {
   expect(() => {
     use([]);
   }).toThrow();
-  runNoCheck(() => {
+  withoutCheck(() => {
     use();
   });
 });
@@ -36,7 +36,7 @@ test('render', (done) => {
     },
     async addAsync() {
       const { add } = use();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       add();
     },
   });
@@ -50,10 +50,18 @@ test('render', (done) => {
   const useCounter = counter;
   const useOuter = outer;
 
-  function Counter() {
-    const { count } = useCounter('count');
-    const { add, addAsync } = useCounter();
-    const { addOutErr } = useOuter('addOutErr');
+  const ErrKeys = () => {
+    useCounter({});
+    return null;
+  };
+  expect(() => {
+    shallow(<ErrKeys />);
+  }).toThrow();
+
+  const Counter = () => {
+    const { count } = useCounter(['count']);
+    const { add, addAsync } = useCounter([]);
+    const { addOutErr } = useOuter();
     return (
       <>
         <p>{count}</p>
@@ -62,12 +70,11 @@ test('render', (done) => {
         <button id="addOutErr" onClick={addOutErr} />
       </>
     );
-  }
-
+  };
   const wrapper = mount(<Counter />);
 
   wrapper.find('#add').simulate('click');
-  runNoCheck(() => {
+  withoutCheck(() => {
     wrapper.find('#addAsync').simulate('click');
   });
   expect(() => {
@@ -77,5 +84,5 @@ test('render', (done) => {
   setTimeout(() => {
     wrapper.unmount();
     done();
-  }, 1000);
+  }, 0);
 });
