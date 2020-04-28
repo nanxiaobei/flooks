@@ -1,4 +1,4 @@
-# 🍸 flooks <sup><sup><sub><sub>v2</sub></sub></sup></sup>
+# 🍸 flooks <sup><sup><sub>v2</sub></sup></sup>
 
 A state manager for React Hooks, maybe the simplest.
 
@@ -90,7 +90,7 @@ function Demo() {
 
 ## Demo
 
-[≡ Live demo ≡](https://codesandbox.io/s/flooks-20-e4fsq)
+[≡ Live demo ≡](https://codesandbox.io/s/flooks-gqye5)
 
 ## API
 
