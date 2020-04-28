@@ -125,7 +125,7 @@ Call outside of a model, returns `useSomeModel` Hook, also is `someModel` model 
 
 ## Philosophy
 
-- Our philosophy is decentralization, so we recommend binding one component and one model as one piece.
+- The philosophy of flooks is decentralization, so recommend binding one component and one model as one.
 - No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
 - A model has its own space, when call `someModel()` in other models, all models can be connected.
 

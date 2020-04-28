@@ -107,7 +107,7 @@ const ownModel = use();
 use(payload);
 ```
 
-在 model 内调用，若传入 `payload` 对象，`use` 将用作 setter。`payload` 应该为对象。
+在 model 内调用，若传入 `payload` 对象，`use` 将用作 setter。`payload` 应为对象。
 
 ### `use(model)` 用作初始化，返回 React Hooks，同时也是 model getter
 
@@ -125,9 +125,9 @@ const useSomeModel /* = someModel */ = use(model);
 
 ## 理念
 
-- 我们的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
+- flooks 的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
 - 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
-- model 有自己的地盘，同时通过在 model 中调用 `someModel()`，所有 model 都可以实现互通。
+- model 有自己的空间，同时通过在其它 model 中调用 `someModel()`，所有 model 可实现互通。
 
 ## 协议
 
