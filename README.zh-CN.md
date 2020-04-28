@@ -1,4 +1,4 @@
-# 🍸 flooks 2.0
+# 🍸 flooks <sup><sup><sub><sub>v2</sub></sub></sup></sup>
 
 一个 React Hooks 状态管理器，也许是最简单的那个。
 
@@ -29,7 +29,7 @@ yarn add flooks
 npm install flooks
 ```
 
-## 使用
+## 示例
 
 最简洁的 API，只有 `use`：
 
@@ -88,9 +88,9 @@ function Demo() {
 
 \* **自动 loading：** 当 model 方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
 
-## 示例
+## 演示
 
-[≡ 在线示例 ≡](https://codesandbox.io/s/flooks-20-e4fsq)
+[≡ 在线演示 ≡](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ## API
 

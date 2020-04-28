@@ -1,4 +1,4 @@
-# 🍸 flooks 2.0
+# 🍸 flooks <sup><sup><sub><sub>v2</sub></sub></sup></sup>
 
 A state manager for React Hooks, maybe the simplest.
 
@@ -20,16 +20,16 @@ English | [简体中文](./README.zh-CN.md)
 ## Install
 
 ```sh
-yarn add flooks@next
+yarn add flooks
 ```
 
 or
 
 ```sh
-npm install flooks@next
+npm install flooks
 ```
 
-## Usage
+## Example
 
 The simplest API of only `use`:
 
