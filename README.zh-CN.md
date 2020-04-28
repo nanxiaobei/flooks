@@ -1,4 +1,4 @@
-# 🍸 flooks <sup><sup><sub><sub>伏鹿可思</sub></sub></sup></sup>
+# 🍸 flooks 2.0
 
 一个 React Hooks 状态管理器，也许是最简单的那个。
 
@@ -9,63 +9,13 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-⏳ 自动 loading 处理 | 🧩 模块化 | 🔌 按需重渲染
+自动 loading 处理 ▧ 模块化 ▧ 按需重新渲染
 
 ---
 
 [English](./README.md) | 简体中文
 
 ---
-
-<details>
-<summary>
-<strong>看一眼 flooks 2.0 💭 下一代简洁设计 🤳）</strong>
-</summary>
-
----
-
-最简洁的 API，只有 `use`，怎么样？现在就试试吧。
-
-[▷ 在线示例](https://codesandbox.io/s/flooks-20-e4fsq)
-
-```shell script
-yarn add flooks@next
-```
-
-```jsx harmony
-import use from 'flooks';
-
-const useCounter = use({
-  count: 0,
-  add() {
-    const { count } = use();
-    use({ count: count + 1 });
-  },
-  sub() {
-    const { count } = use();
-    use({ count: count - 1 });
-  },
-  async addLater() {
-    const { add } = use();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    add();
-  },
-});
-
-function Counter() {
-  const { count, add, sub, addLater } = useCounter();
-  return (
-    <>
-      <p>{count}</p>
-      <button onClick={add}>+</button>
-      <button onClick={sub}>-</button>
-      <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
-    </>
-  );
-}
-```
-
-</details>
 
 ## 安装
 
@@ -81,139 +31,104 @@ npm install flooks
 
 ## 使用
 
-```jsx harmony
-import { setModel, useModel } from 'flooks';
+最简洁的 API，只有 `use`：
+
+```js
+// counter.js
+
+import use from 'flooks';
 
 const counter = {
-  state: {
-    count: 0,
+  count: 0,
+  add() {
+    const { count } = use(); // ---- `use` 用作 getter
+    use({ count: count + 1 }); // -- `use` 用作 setter
   },
-  actions: ({ model, setState }) => ({
-    increment() {
-      const { count } = model();
-      setState({ count: count + 1 });
-    },
-    decrement() {
-      const { count } = model();
-      setState({ count: count - 1 });
-    },
-    async incrementAsync() {
-      const { increment } = model();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      increment();
-    },
-  }),
 };
 
-setModel('counter', counter);
+export default use(counter); // ---- `use` 用作初始化
+```
 
-function Counter() {
-  const { count, increment, decrement, incrementAsync } = useModel('counter');
+```js
+// trigger.js
+
+import use from 'flooks';
+import counter from './counter'; // 引入为 `counter`，model getter
+
+const trigger = {
+  // `addLater.loading` 状态可用
+  async addLater() {
+    const { add } = counter();
+    await new Promise((resolve = setTimeout(resolve, 1000)));
+    add();
+  },
+};
+
+export default use(trigger);
+```
+
+```jsx harmony
+// Demo.jsx
+
+import useCounter from './counter'; // 引入为 `useCounter`，React Hooks
+import useTrigger from './trigger';
+
+function Demo() {
+  const { count, add } = useCounter(['count']); // `deps` 控制重新渲染
+  const { addLater } = useTrigger();
   return (
     <>
-      Count: {count}
-      <button onClick={increment}>+</button>
-      <button onClick={decrement}>-</button>
-      <button onClick={incrementAsync}>+ async{incrementAsync.loading && '...'}</button>
+      <p>{count}</p>
+      <button onClick={add}>+</button>
+      <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
     </>
   );
 }
 ```
 
+\* **自动 loading：** 当 model 方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+
 ## 示例
 
-[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14)
+[≡ 在线示例 ≡](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ## API
 
-### 1. setModel()
+### `use()` 作为 getter，获取自身 model
 
 ```js
-setModel(name, model);
+const ownModel = use();
 ```
 
-接收名称字符串和 model 对象两个参数，初始化 model。
+在 model 内调用，若不传入参数，`use` 将用作 getter。
 
-model 对象中需包含 `state` 对象和 `actions` 函数。
-
-### 2. useModel()
+### `use(payload)` 作为 setter，更新自身 model
 
 ```js
-const { someState, someAction } = useModel(name, onlyActions?);
+use(payload);
 ```
 
-React Hook。接收 model 名称，返回初始化后的 model，包含其所有 state 和 actions。
+在 model 内调用，若传入 `payload` 对象，`use` 将用作 setter。`payload` 应该为对象。
 
-若只用到 actions，`onlyActions` 可传入 `true` 以阻止组件重新渲染。
-
-### 3. ({ model, setState }) => realActions
+### `use(model)` 用作初始化，返回 React Hooks，同时也是 model getter
 
 ```js
-actions: ({ model, setState }) => ({ someAction() {} });
+const useSomeModel /* = someModel */ = use(model);
 ```
 
-`actions` 参数中可拿到两个函数，`model()` 和 `setState()`，可在每个 action 中使用。
+在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 命名规则，故在 model 中使用时，建议命名与 Hooks 不同）。
 
-#### 3.1. model()
+\* **按需重新渲染：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
 
-```js
-const { someState, someAction } = model(name?);
-```
-
-返回与 `useModel()` 一致，但当获取自身 model 时，`name` 可忽略。
-
-即 `model()` 获取自身 model，`model('other')` 获取其它 model。
-
-#### 3.2. setState()
-
-```js
-setState(payload);
-```
-
-更新自身 model 的 state，传入 `payload` 对象。无法更新其它 model。
-
-## FAQ
-
-### 1. 自动 loading ？
-
-```js
-actions: ({ model, setState }) => ({
-  async someAsyncAction() {},
-});
-```
-
-当 action 为异步时，`someAsyncAction.loading` 可供使用。
-
-### 2. 代码分割？
-
-天然支持。在组件中调用 `setModel()`，然后使用像 [`loadable-components`](https://github.com/smooth-code/loadable-components) 这样的库。
-
-### 3. 统一设置 model？
-
-```js
-import { setModel } from 'flooks';
-import a from '...';
-...
-
-const models = { a, b, c };
-Object.entries(models).forEach(([name, model]) => {
-  setModel(name, model);
-});
-```
-
-不推荐统一设置。请在组件中分别调用 `setModel()`，可以更加清晰和灵活。
+- 若不传入参数，所有 model 更新都将触发重新渲染
+- 若传入空数组（`[]`），永不触发重新传染
+- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中的项变化时触发重新渲染
 
 ## 理念
 
-1\. 我们的理念是去中心化，因此建议将 model 和路由入口组件绑定为一个模块，组件中调用 `setModel()` 来绑定二者。
-
-2\. 不需要添加 `store.js` 或 `models.js` 这样的文件，因为不需要从顶部分发 store。没有中心化的 store，只有下层路由组件和 model 组成的不同模块。
-
-3\. model 有自己的命名空间，使用 `useModel()` 和 `model()`，可访问到其他所有的 model。model 均是独立的，但同时也是连接的。
-
-4\. 不要使用 `setmodel()` 多次初始化同一个 model，如果有一个 "common" model 在多个地方使用，建议在某个上层组件中进行初始化，比如 `App.jsx`。
-
-5\. 就这些，完事啦~
+- 我们的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
+- 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
+- model 有自己的地盘，同时通过在 model 中调用 `someModel()`，所有 model 都可以实现互通。
 
 ## 协议
 

@@ -1,4 +1,4 @@
-# 🍸 flooks
+# 🍸 flooks 2.0
 
 A state manager for React Hooks, maybe the simplest.
 
@@ -9,7 +9,7 @@ A state manager for React Hooks, maybe the simplest.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-⏳ Auto loading | 🧩 Modules | 🔌 Rerender control
+Auto loading handing ▧ Modules ▧ Rerender control
 
 ---
 
@@ -17,203 +17,118 @@ English | [简体中文](./README.zh-CN.md)
 
 ---
 
-<details>
-<summary>
-<strong>Take a look at flooks 2.0 💭 (Next generation of simplicity 🤳)</strong>
-</summary>
+## Install
 
----
-
-The simplest API of only `use`, like it? try it now.
-
-[▷ Live demo](https://codesandbox.io/s/flooks-20-e4fsq)
-
-```shell script
+```sh
 yarn add flooks@next
 ```
 
-```jsx harmony
+or
+
+```sh
+npm install flooks@next
+```
+
+## Usage
+
+The simplest API of only `use`:
+
+```js
+// counter.js
+
 import use from 'flooks';
 
-const useCounter = use({
+const counter = {
   count: 0,
   add() {
-    const { count } = use();
-    use({ count: count + 1 });
+    const { count } = use(); // ---- `use` as a getter
+    use({ count: count + 1 }); // -- `use` as a setter
   },
-  sub() {
-    const { count } = use();
-    use({ count: count - 1 });
-  },
+};
+
+export default use(counter); // ---- `use` as an initializer
+```
+
+```js
+// trigger.js
+
+import use from 'flooks';
+import counter from './counter'; // import as `counter`, a model getter
+
+const trigger = {
+  // `addLater.loading` can be use
   async addLater() {
-    const { add } = use();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { add } = counter();
+    await new Promise((resolve = setTimeout(resolve, 1000)));
     add();
   },
-});
+};
 
-function Counter() {
-  const { count, add, sub, addLater } = useCounter();
+export default use(trigger);
+```
+
+```jsx harmony
+// Demo.jsx
+
+import useCounter from './counter'; // import as `useCounter`, a React Hook
+import useTrigger from './trigger';
+
+function Demo() {
+  const { count, add } = useCounter(['count']); // `deps` to control rerender
+  const { addLater } = useTrigger();
   return (
     <>
       <p>{count}</p>
       <button onClick={add}>+</button>
-      <button onClick={sub}>-</button>
       <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
     </>
   );
 }
 ```
 
-</details>
-
-## Install
-
-```sh
-yarn add flooks
-```
-
-or
-
-```sh
-npm install flooks
-```
-
-## Usage
-
-```jsx harmony
-import { setModel, useModel } from 'flooks';
-
-const counter = {
-  state: {
-    count: 0,
-  },
-  actions: ({ model, setState }) => ({
-    increment() {
-      const { count } = model();
-      setState({ count: count + 1 });
-    },
-    decrement() {
-      const { count } = model();
-      setState({ count: count - 1 });
-    },
-    async incrementAsync() {
-      const { increment } = model();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      increment();
-    },
-  }),
-};
-
-setModel('counter', counter);
-
-function Counter() {
-  const { count, increment, decrement, incrementAsync } = useModel('counter');
-  return (
-    <>
-      Count: {count}
-      <button onClick={increment}>+</button>
-      <button onClick={decrement}>-</button>
-      <button onClick={incrementAsync}>+ async{incrementAsync.loading && '...'}</button>
-    </>
-  );
-}
-```
+\* **Auto loading:** When a model method `someMethod` is async, `someMethod.loading` can be used as its loading state.
 
 ## Demo
 
-[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14)
+[≡ Live demo ≡](https://codesandbox.io/s/flooks-20-e4fsq)
 
 ## API
 
-### 1. setModel()
+### `use()` as a getter, to get own model
 
 ```js
-setModel(name, model);
+const ownModel = use();
 ```
 
-Accepts a name string and an model object, initialize the model.
+Inside a model, if no param is passed, `use` will be a getter.
 
-The model object needs to contain a `state` object and an `actions` function.
-
-### 2. useModel()
+### `use(payload)` as a setter, to update own model
 
 ```js
-const { someState, someAction } = useModel(name, onlyActions?);
+use(payload);
 ```
 
-A React Hook. Accepts a name, returns the initialized model with its state and actions.
+Inside a model, if passed an `payload` object, `use` will be a setter. `payload` should be an object.
 
-If only use actions, pass `true` for `onlyActions` to avoid a component rerender.
-
-### 3. ({ model, setState }) => realActions
+### `use(model)` as an initializer, returns a React Hook, also a model getter
 
 ```js
-actions: ({ model, setState }) => ({ someAction() {} });
+const useSomeModel /* = someModel */ = use(model);
 ```
 
-The argument of `actions` contains two functions, `model()` and `setState()`, can be used in every action.
+Call outside of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint naming rule, therefore, when used in a model, recommended naming it different from hooks).
 
-#### 3.1. model()
+\* **Rerender control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
 
-```js
-const { someState, someAction } = model(name?);
-```
-
-Returns the same as `useModel()`, but when get own model, `name` can be omitted.
-
-i.e. `model()` for own model, `model('other')` for other models.
-
-#### 3.2. setState()
-
-```js
-setState(payload);
-```
-
-Update own model's state with the `payload` object, can't update other models'.
-
-## FAQ
-
-### 1. Auto loading?
-
-```js
-actions: ({ model, setState }) => ({
-  async someAsyncAction() {},
-});
-```
-
-When an action is async, `someAsyncAction.loading` can be use.
-
-### 2. Code splitting?
-
-Supported naturally. Call `setModel()` in components, then use libraries like [`loadable-components`](https://github.com/smooth-code/loadable-components).
-
-### 3. Set models together?
-
-```js
-import { setModel } from 'flooks';
-import a from '...';
-...
-
-const models = { a, b, c };
-Object.entries(models).forEach(([name, model]) => {
-  setModel(name, model);
-});
-```
-
-This is not recommended. Call `setModel()` separately in components, which is more clear and flexible.
+- If pass nothing, all updates in the model will trigger a rerender
+- If pass an empty array (`[]`), it will never trigger a rerender
+- If pass a dependency list (`['a', 'b']`), it will trigger a rerender only when one of the dependencies changes
 
 ## Philosophy
 
-1\. Our philosophy is decentralization, so we recommend to bind a model and a route entry component as one module, call `setModel()` in the component to bind two.
-
-2\. No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now. Without the centralized store, just the modules consisting of components and models in the lower level.
-
-3\. A model has its own space, with `useModel()` and `model()`, all other models can be reached. Models are independent, but also connected.
-
-4\. Don't initialize a model multiple times using `setModel()`, if have a "common" model used in several places, recommend to to initialize it in an upper component, such as `App.jsx`.
-
-5\. That's all, enjoy it~
+- Our philosophy is decentralization, so we recommend binding one component and one model as one piece.
+- No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
+- A model has its own space, when call `someModel()` in other models, all models can be connected.
 
 ## License
 
