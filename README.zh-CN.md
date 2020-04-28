@@ -53,10 +53,9 @@ export default use(counter); // ---- `use` 用作初始化
 // trigger.js
 
 import use from 'flooks';
-import counter from './counter'; // 引入为 `counter`，model getter
+import counter from 'path/to/counter'; // 引入为 `counter`，model getterr¹
 
 const trigger = {
-  // `addLater.loading` 状态可用
   async addLater() {
     const { add } = counter();
     await new Promise((resolve = setTimeout(resolve, 1000)));
@@ -70,12 +69,12 @@ export default use(trigger);
 ```jsx harmony
 // Demo.jsx
 
-import useCounter from './counter'; // 引入为 `useCounter`，React Hooks
-import useTrigger from './trigger';
+import useCounter from 'path/to/counter'; // 引入为 `useCounter`，React Hooks²
+import useTrigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // `deps` 控制重新渲染
-  const { addLater } = useTrigger();
+  const { count, add } = useCounter(['count']); // `deps` ＜控制重新渲染＞
+  const { addLater } = useTrigger(); // `addLater.loading` ＜自动 loading＞ 状态
   return (
     <>
       <p>{count}</p>

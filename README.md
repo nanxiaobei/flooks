@@ -53,10 +53,9 @@ export default use(counter); // ---- `use` as an initializer
 // trigger.js
 
 import use from 'flooks';
-import counter from './counter'; // import as `counter`, a model getter
+import counter from 'path/to/counter'; // import as `counter`, a model getter¹
 
 const trigger = {
-  // `addLater.loading` can be use
   async addLater() {
     const { add } = counter();
     await new Promise((resolve = setTimeout(resolve, 1000)));
@@ -70,12 +69,12 @@ export default use(trigger);
 ```jsx harmony
 // Demo.jsx
 
-import useCounter from './counter'; // import as `useCounter`, a React Hook
-import useTrigger from './trigger';
+import useCounter from 'path/to/counter'; // import as `useCounter`, a React Hook²
+import useTrigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // `deps` to control rerender
-  const { addLater } = useTrigger();
+  const { count, add } = useCounter(['count']); // `deps` for ＜rerender control＞
+  const { addLater } = useTrigger(); // `addLater.loading` ＜auto loading＞ state
   return (
     <>
       <p>{count}</p>
