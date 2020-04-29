@@ -34,31 +34,31 @@ npm install flooks
 The simplest API of only `use`:
 
 ```js
-// counter.js
+// counter.js ∷ model
 
 import use from 'flooks';
 
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // ---- `use` as a getter
-    use({ count: count + 1 }); // -- `use` as a setter
+    const { count } = use(); // <--- `use` to get
+    use({ count: count + 1 }); // <- `use` to set
   },
 };
 
-export default use(counter); // ---- `use` as an initializer
+export default use(counter); // <--- `use` to initialize. exports a React Hook¹, also a model getter²
 ```
 
 ```js
-// trigger.js
+// trigger.js ∷ model
 
 import use from 'flooks';
-import counter from 'path/to/counter'; // import as `counter`, a model getter¹
+import counter from 'path/to/counter'; // import as `counter`, a model getter²
 
 const trigger = {
   async addLater() {
     const { add } = counter();
-    await new Promise((resolve = setTimeout(resolve, 1000)));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
 };
@@ -66,10 +66,10 @@ const trigger = {
 export default use(trigger);
 ```
 
-```jsx harmony
-// Demo.jsx
+```jsx
+// Demo.jsx ∷ component
 
-import useCounter from 'path/to/counter'; // import as `useCounter`, a React Hook²
+import useCounter from 'path/to/counter'; // import as `useCounter`, a React Hook¹
 import useTrigger from 'path/to/trigger';
 
 function Demo() {
@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **Auto loading:** When a model method `someMethod` is async, `someMethod.loading` can be used as its loading state.
+\* **Auto loading:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
 
 ## Demo
 

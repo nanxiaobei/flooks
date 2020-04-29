@@ -34,31 +34,31 @@ npm install flooks
 最简洁的 API，只有 `use`：
 
 ```js
-// counter.js
+// counter.js ∷ model
 
 import use from 'flooks';
 
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // ---- `use` 用作 getter
-    use({ count: count + 1 }); // -- `use` 用作 setter
+    const { count } = use(); // <--- `use` 获取 model
+    use({ count: count + 1 }); // <- `use` 更新 model
   },
 };
 
-export default use(counter); // ---- `use` 用作初始化
+export default use(counter); // <--- `use` 初始化 model。导出 React Hooks¹，同时也是 model getter²
 ```
 
 ```js
-// trigger.js
+// trigger.js ∷ model
 
 import use from 'flooks';
-import counter from 'path/to/counter'; // 引入为 `counter`，model getterr¹
+import counter from 'path/to/counter'; // 引入为 `counter`，model getter²
 
 const trigger = {
   async addLater() {
     const { add } = counter();
-    await new Promise((resolve = setTimeout(resolve, 1000)));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
 };
@@ -66,10 +66,10 @@ const trigger = {
 export default use(trigger);
 ```
 
-```jsx harmony
-// Demo.jsx
+```jsx
+// Demo.jsx ∷ component
 
-import useCounter from 'path/to/counter'; // 引入为 `useCounter`，React Hooks²
+import useCounter from 'path/to/counter'; // 引入为 `useCounter`，React Hooks¹
 import useTrigger from 'path/to/trigger';
 
 function Demo() {
@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **自动 loading：** 当 model 方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+\* **自动 loading：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
 
 ## 演示
 
