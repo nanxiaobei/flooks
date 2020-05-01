@@ -9,7 +9,7 @@ A state manager for React Hooks, maybe the simplest.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-Auto loading handing ▧ Modules ▧ Rerender control
+Auto loading state ▧ Modules ▧ Re-render control
 
 ---
 
@@ -34,30 +34,30 @@ npm install flooks
 The simplest API of only `use`:
 
 ```js
-// counter.js ∷ model
+// counter.js
 
 import use from 'flooks';
 
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // <--- `use` to get
-    use({ count: count + 1 }); // <- `use` to set
+    const { count } = use(); // <--------------------- `use` get own model
+    use({ count: count + 1 }); // <------------------- `use` set own model
   },
 };
 
-export default use(counter); // <--- `use` to initialize. exports a React Hook¹, also a model getter²
+export default use(counter); // <--------------------- `use` initialize a model
 ```
 
 ```js
-// trigger.js ∷ model
+// trigger.js
 
 import use from 'flooks';
-import counter from 'path/to/counter'; // import as `counter`, a model getter²
+import counter from 'path/to/counter';
 
 const trigger = {
   async addLater() {
-    const { add } = counter();
+    const { add } = counter(); // <------------------- get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -67,14 +67,14 @@ export default use(trigger);
 ```
 
 ```jsx
-// Demo.jsx ∷ component
+// Demo.jsx
 
-import useCounter from 'path/to/counter'; // import as `useCounter`, a React Hook¹
+import useCounter from 'path/to/counter';
 import useTrigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // `deps` for ＜rerender control＞
-  const { addLater } = useTrigger(); // `addLater.loading` ＜auto loading＞ state
+  const { count, add } = useCounter(['count']); // <-- `deps` re-render control
+  const { addLater } = useTrigger(); // <------------- `addLater.loading` auto loading state
   return (
     <>
       <p>{count}</p>
@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **Auto loading:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
+\* **Auto loading state:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
 
 ## Demo
 
@@ -117,11 +117,11 @@ const useSomeModel /* = someModel */ = use(model);
 
 Call outside of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint naming rule, therefore, when used in a model, recommended naming it different from hooks).
 
-\* **Rerender control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
+\* **Re-render control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
 
-- If pass nothing, all updates in the model will trigger a rerender
-- If pass an empty array (`[]`), it will never trigger a rerender
-- If pass a dependency list (`['a', 'b']`), it will trigger a rerender only when one of the dependencies changes
+- If pass nothing, all updates in the model will trigger a re-render
+- If pass an empty array (`[]`), it will never trigger a re-render
+- If pass a dependency list (`['a', 'b']`), it will trigger a re-render only when one of the dependencies changes
 
 ## Philosophy
 

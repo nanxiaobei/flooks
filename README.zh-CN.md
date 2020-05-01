@@ -9,7 +9,7 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-自动 loading 处理 ▧ 模块化 ▧ 按需重新渲染
+自动 loading state ▧ 模块化 ▧ 按需触发 re-render
 
 ---
 
@@ -34,30 +34,30 @@ npm install flooks
 最简洁的 API，只有 `use`：
 
 ```js
-// counter.js ∷ model
+// counter.js
 
 import use from 'flooks';
 
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // <--- `use` 获取 model
-    use({ count: count + 1 }); // <- `use` 更新 model
+    const { count } = use(); // <--------------------- `use` 获取自身 model
+    use({ count: count + 1 }); // <------------------- `use` 更新自身 model
   },
 };
 
-export default use(counter); // <--- `use` 初始化 model。导出 React Hooks¹，同时也是 model getter²
+export default use(counter); // <--------------------- `use` 初始化 model
 ```
 
 ```js
-// trigger.js ∷ model
+// trigger.js
 
 import use from 'flooks';
-import counter from 'path/to/counter'; // 引入为 `counter`，model getter²
+import counter from 'path/to/counter';
 
 const trigger = {
   async addLater() {
-    const { add } = counter();
+    const { add } = counter(); // <------------------- 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -67,14 +67,14 @@ export default use(trigger);
 ```
 
 ```jsx
-// Demo.jsx ∷ component
+// Demo.jsx
 
-import useCounter from 'path/to/counter'; // 引入为 `useCounter`，React Hooks¹
+import useCounter from 'path/to/counter';
 import useTrigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // `deps` ＜控制重新渲染＞
-  const { addLater } = useTrigger(); // `addLater.loading` ＜自动 loading＞ 状态
+  const { count, add } = useCounter(['count']); // <-- `deps` 按需触发 re-render
+  const { addLater } = useTrigger(); // <------------- `addLater.loading` 自动 loading state
   return (
     <>
       <p>{count}</p>
@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **自动 loading：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+\* **自动 loading state：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
 
 ## 演示
 
@@ -117,11 +117,11 @@ const useSomeModel /* = someModel */ = use(model);
 
 在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 命名规则，故在 model 中使用时，建议命名与 Hooks 不同）。
 
-\* **按需重新渲染：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
+\* **按需触发 re-render：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
 
-- 若不传入参数，所有 model 更新都将触发重新渲染
-- 若传入空数组（`[]`），永不触发重新传染
-- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中的项变化时触发重新渲染
+- 若不传入参数，所有 model 更新都将触发 re-render
+- 若传入空数组（`[]`），永不触发 re-render
+- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中的项变化时触发 re-render
 
 ## 理念
 
