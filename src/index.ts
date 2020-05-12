@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 const run = Symbol();
 
 type Model = { [key: string]: any };
-type Sub = { keys: string[]; setModel: (payload: Model) => void };
+type Sub = { keys: undefined | string[]; setModel: (payload: Model) => void };
 type Stack = (Model & { [run]: Sub[] })[];
 type Use = (model?: Model) => any;
 
@@ -35,9 +35,10 @@ const use: Use = (model) => {
 
     Object.assign(currentModel, model);
     const subs = currentModel[run];
-    const updateKeys = Object.keys(model);
+    const payloadKeys = Object.keys(model);
+
     subs.forEach(({ keys, setModel }) => {
-      if (updateKeys.some((key) => keys.includes(key))) setModel(model);
+      if (!keys || payloadKeys.some((key) => keys.includes(key))) setModel(model);
     });
     return;
   }
@@ -55,18 +56,20 @@ const use: Use = (model) => {
       litModel[key] = (...args: any) => {
         stack.unshift(litModel);
         const res = val(...args);
-        if (!res || typeof res.then !== 'function') {
-          stack.shift();
-          return res;
-        }
-        return new Promise((resolve, reject) => {
-          setLoading(litModel, key, true);
-          const pro = res.then(resolve).catch(reject);
-          pro.finally(() => {
+        stack.shift();
+
+        if (!res || typeof res.then !== 'function') return res;
+
+        return Promise.resolve()
+          .then(() => {
+            stack.unshift(litModel);
+            setLoading(litModel, key, true);
+            return res;
+          })
+          .finally(() => {
             setLoading(litModel, key, false);
             stack.shift();
           });
-        });
       };
     }
   });
@@ -76,10 +79,9 @@ const use: Use = (model) => {
       const [, setState] = useState();
       if (__DEV__ && keys !== undefined && !Array.isArray(keys)) throw new Error(ERR_KEYS);
       useEffect(() => {
-        const newKeys = keys === undefined ? Object.keys(model) : keys;
-        if (newKeys.length === 0) return;
+        if (Array.isArray(keys) && keys.length === 0) return;
         const subs = litModel[run];
-        const item = { keys: newKeys, setModel: setState };
+        const item = { keys, setModel: setState };
         subs.push(item);
         return () => {
           subs.splice(subs.indexOf(item), 1);
