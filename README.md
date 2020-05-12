@@ -41,12 +41,12 @@ import use from 'flooks';
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // <--------------------- `use` get own model
-    use({ count: count + 1 }); // <------------------- `use` set own model
+    const { count } = use(); // <---- `use` get own model
+    use({ count: count + 1 }); // <-- `use` set own model
   },
 };
 
-export default use(counter); // <--------------------- `use` initialize a model
+export default use(counter); // <---- `use` initialize a model
 ```
 
 ```js
@@ -57,7 +57,7 @@ import counter from 'path/to/counter';
 
 const trigger = {
   async addLater() {
-    const { add } = counter(); // <------------------- get other models
+    const { add } = counter(); // <-- get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -74,7 +74,7 @@ import useTrigger from 'path/to/trigger';
 
 function Demo() {
   const { count, add } = useCounter(['count']); // <-- `deps` re-render control
-  const { addLater } = useTrigger(); // <------------- `addLater.loading` auto loading state
+  const { addLater } = useTrigger(); // <-- `addLater.loading` auto loading state
   return (
     <>
       <p>{count}</p>
@@ -89,7 +89,7 @@ function Demo() {
 
 ## Demo
 
-[≡ Live demo ≡](https://codesandbox.io/s/flooks-gqye5)
+[Ξ Live demo Ξ](https://codesandbox.io/s/flooks-gqye5)
 
 ## API
 
@@ -112,7 +112,7 @@ Inside a model, if passed an `payload` object, `use` will be a setter. `payload`
 ### `use(model)` as an initializer, returns a React Hook, also a model getter
 
 ```js
-const useSomeModel /* = someModel */ = use(model);
+const useSomeModel = use(model);
 ```
 
 Call outside of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint naming rule, therefore, when used in a model, recommended naming it different from hooks).

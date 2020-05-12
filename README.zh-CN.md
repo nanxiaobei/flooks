@@ -41,12 +41,12 @@ import use from 'flooks';
 const counter = {
   count: 0,
   add() {
-    const { count } = use(); // <--------------------- `use` 获取自身 model
-    use({ count: count + 1 }); // <------------------- `use` 更新自身 model
+    const { count } = use(); // <---- `use` 获取自身 model
+    use({ count: count + 1 }); // <-- `use` 更新自身 model
   },
 };
 
-export default use(counter); // <--------------------- `use` 初始化 model
+export default use(counter); // <---- `use` 初始化 model
 ```
 
 ```js
@@ -57,7 +57,7 @@ import counter from 'path/to/counter';
 
 const trigger = {
   async addLater() {
-    const { add } = counter(); // <------------------- 获取其它 model
+    const { add } = counter(); // <-- 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -74,7 +74,7 @@ import useTrigger from 'path/to/trigger';
 
 function Demo() {
   const { count, add } = useCounter(['count']); // <-- `deps` 按需触发 re-render
-  const { addLater } = useTrigger(); // <------------- `addLater.loading` 自动 loading state
+  const { addLater } = useTrigger(); // <-- `addLater.loading` 自动 loading state
   return (
     <>
       <p>{count}</p>
@@ -89,7 +89,7 @@ function Demo() {
 
 ## 演示
 
-[≡ 在线演示 ≡](https://codesandbox.io/s/flooks-gqye5)
+[Ξ 在线演示 Ξ](https://codesandbox.io/s/flooks-gqye5)
 
 ## API
 
@@ -112,7 +112,7 @@ use(payload);
 ### `use(model)` 用作初始化，返回 React Hooks，同时也是 model getter
 
 ```js
-const useSomeModel /* = someModel */ = use(model);
+const useSomeModel = use(model);
 ```
 
 在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 命名规则，故在 model 中使用时，建议命名与 Hooks 不同）。
