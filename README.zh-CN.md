@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-**\* 自动 loading state：** 当函数 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+**\* 自动 loading state：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
 
 ## 演示
 
