@@ -101,8 +101,6 @@ const ownModel = use();
 
 在 model 内调用，若不传入参数，`use` 将用作 getter。
 
-**\* 重要：** `use()` 作为 getter 调用时应放置于异步函数顶部。
-
 ### `use(payload)` 作为 setter，更新自身 model
 
 ```js
