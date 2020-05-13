@@ -1,6 +1,6 @@
 {
   "name": "flooks",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A state manager for React Hooks",
   "keywords": [
     "react",
