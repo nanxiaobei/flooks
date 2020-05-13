@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **自动 loading state：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+**\* 自动 loading state：** 当函数 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
 
 ## 演示
 
@@ -101,6 +101,8 @@ const ownModel = use();
 
 在 model 内调用，若不传入参数，`use` 将用作 getter。
 
+**\* 重要：** `use()` 作为 getter 的调用应放置在函数顶部。
+
 ### `use(payload)` 作为 setter，更新自身 model
 
 ```js
@@ -115,9 +117,9 @@ use(payload);
 const useSomeModel = use(model);
 ```
 
-在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 命名规则，故在 model 中使用时，建议命名与 Hooks 不同）。
+在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 规则，在其它 model 中调用时，建议命名与 Hooks 不同）。
 
-\* **按需触发 re-render：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
+**\* 按需触发 re-render：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
 
 - 若不传入参数，所有 model 更新都将触发 re-render
 - 若传入空数组（`[]`），永不触发 re-render

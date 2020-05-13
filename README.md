@@ -85,7 +85,7 @@ function Demo() {
 }
 ```
 
-\* **Auto loading state:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
+**\* Auto loading state:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
 
 ## Demo
 
@@ -93,31 +93,33 @@ function Demo() {
 
 ## API
 
-### `use()` as a getter, to get own model
+### `use()` as getter, get own model
 
 ```js
 const ownModel = use();
 ```
 
-Inside a model, if no param is passed, `use` will be a getter.
+Call in a model, if passed no param, `use` will be a getter.
 
-### `use(payload)` as a setter, to update own model
+**\* Important:** `use()` as getter should be placed at the top of a function.
+
+### `use(payload)` as setter, update own model
 
 ```js
 use(payload);
 ```
 
-Inside a model, if passed `payload`, `use` will be a setter. `payload` should be an object.
+Call in a model, if passed `payload`, `use` will be a setter. `payload` should be an object.
 
-### `use(model)` as an initializer, returns a React Hook, also a model getter
+### `use(model)` as initializer, returns a React Hook, also a model getter
 
 ```js
 const useSomeModel = use(model);
 ```
 
-Call outside of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint naming rule, therefore, when used in a model, recommended naming it different from hooks).
+Call out of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint rule, when used in another model, recommended naming it different from hooks).
 
-\* **Re-render control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
+**\* Re-render control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
 
 - If pass nothing, all updates in the model will trigger a re-render
 - If pass an empty array (`[]`), it will never trigger a re-render
