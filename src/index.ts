@@ -2,20 +2,27 @@ import { useState, useEffect } from 'react';
 
 const run = Symbol();
 
-type Model = { [key: string]: any };
 type Sub = { keys: undefined | string[]; setModel: (payload: Model) => void };
-type Stack = (Model & { [run]: Sub[] })[];
+type Model = { [key: string]: any; [run]?: Sub[] };
 type Use = (model?: Model) => any;
 
+const ERR_USE = 'use() as getter should be placed at the top of a function';
 const ERR_KEYS = 'keys should be an array';
 const errUse = (act: string): string => `To ${act} a model, param to use() should be an object`;
 const isObj = (val: any): boolean => Object.prototype.toString.call(val) === '[object Object]';
 
-const stack: Stack = [];
+const stack: Model[] = [];
+let asyncCount = 0;
 
 const setLoading = (model: Model, key: string, loading: boolean) => {
   model[key].loading = loading;
-  use({ [key]: model[key] });
+  const subs = model[run];
+  const update = {};
+
+  // @ts-ignore
+  subs.forEach(({ keys, setModel }) => {
+    if (!keys || keys.includes(key)) setModel(update);
+  });
 };
 
 const use: Use = (model) => {
@@ -25,7 +32,11 @@ const use: Use = (model) => {
   // getter
   if (model === undefined) {
     if (currentModel) return currentModel;
-    if (__DEV__) throw new Error(errUse('initialize'));
+    if (__DEV__) {
+      /* istanbul ignore next */
+      if (asyncCount > 0) throw new Error(ERR_USE);
+      throw new Error(errUse('initialize'));
+    }
     return;
   }
 
@@ -36,9 +47,11 @@ const use: Use = (model) => {
     Object.assign(currentModel, model);
     const subs = currentModel[run];
     const payloadKeys = Object.keys(model);
+    const update = {};
 
+    // @ts-ignore
     subs.forEach(({ keys, setModel }) => {
-      if (!keys || payloadKeys.some((key) => keys.includes(key))) setModel(model);
+      if (!keys || payloadKeys.some((key) => keys.includes(key))) setModel(update);
     });
     return;
   }
@@ -60,16 +73,12 @@ const use: Use = (model) => {
 
         if (!res || typeof res.then !== 'function') return res;
 
-        return Promise.resolve()
-          .then(() => {
-            stack.unshift(litModel);
-            setLoading(litModel, key, true);
-            return res;
-          })
-          .finally(() => {
-            setLoading(litModel, key, false);
-            stack.shift();
-          });
+        asyncCount++;
+        setLoading(litModel, key, true);
+        return res.finally(() => {
+          setLoading(litModel, key, false);
+          asyncCount--;
+        });
       };
     }
   });
