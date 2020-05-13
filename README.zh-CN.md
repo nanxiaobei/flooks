@@ -107,7 +107,7 @@ const ownModel = use();
 use(payload);
 ```
 
-在 model 内调用，若传入 `payload` 对象，`use` 将用作 setter。`payload` 应为对象。
+在 model 内调用，若传入 `payload`，`use` 将用作 setter。`payload` 应为对象。
 
 ### `use(model)` 用作初始化，返回 React Hooks，同时也是 model getter
 

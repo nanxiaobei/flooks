@@ -107,7 +107,7 @@ Inside a model, if no param is passed, `use` will be a getter.
 use(payload);
 ```
 
-Inside a model, if passed an `payload` object, `use` will be a setter. `payload` should be an object.
+Inside a model, if passed `payload`, `use` will be a setter. `payload` should be an object.
 
 ### `use(model)` as an initializer, returns a React Hook, also a model getter
 
