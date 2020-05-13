@@ -6,13 +6,11 @@ type Sub = { keys: undefined | string[]; setModel: (payload: Model) => void };
 type Model = { [key: string]: any; [run]?: Sub[] };
 type Use = (model?: Model) => any;
 
-const ERR_GET = 'use() as getter should be placed at the top of an async function';
 const ERR_KEYS = 'keys should be an array';
 const errUse = (act: string): string => `To ${act} a model, param to use() should be an object`;
 const isObj = (val: any): boolean => Object.prototype.toString.call(val) === '[object Object]';
 
 const stack: Model[] = [];
-let asyncCount = 0;
 
 const setLoading = (model: Model, key: string, loading: boolean) => {
   model[key].loading = loading;
@@ -32,11 +30,7 @@ const use: Use = (model) => {
   // getter
   if (model === undefined) {
     if (currentModel) return currentModel;
-    if (__DEV__) {
-      /* istanbul ignore next */
-      if (asyncCount > 0) throw new Error(ERR_GET);
-      throw new Error(errUse('initialize'));
-    }
+    if (__DEV__) throw new Error(errUse('initialize'));
     return;
   }
 
@@ -73,11 +67,11 @@ const use: Use = (model) => {
 
         if (!res || typeof res.then !== 'function') return res;
 
-        asyncCount++;
+        stack.unshift(litModel);
         setLoading(litModel, key, true);
         return res.finally(() => {
           setLoading(litModel, key, false);
-          asyncCount--;
+          stack.splice(stack.indexOf(litModel));
         });
       };
     }
