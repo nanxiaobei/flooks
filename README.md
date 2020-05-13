@@ -101,7 +101,7 @@ const ownModel = use();
 
 Call in a model, if passed no param, `use` will be a getter.
 
-**\* Important:** `use()` as getter should be placed at the top of a function.
+**\* Important:** `use()` as getter should be placed at the top of an async function.
 
 ### `use(payload)` as setter, update own model
 
