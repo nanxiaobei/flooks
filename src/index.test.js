@@ -1,7 +1,7 @@
 import React from 'react';
 import { configure, shallow, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import use from './index';
+import useModel from './index';
 
 configure({ adapter: new Adapter() });
 
@@ -9,49 +9,50 @@ console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
 });
 
-const withoutCheck = (fn) => {
+const prodNoCheck = (fn) => {
   process.env.NODE_ENV = 'production';
   fn();
   process.env.NODE_ENV = 'test';
 };
 
-test('use', () => {
+test('useModel', (done) => {
   expect(() => {
-    use();
+    useModel();
   }).toThrow();
-  expect(() => {
-    use([]);
-  }).toThrow();
-  withoutCheck(() => {
-    use();
-  });
-});
 
-test('render', (done) => {
-  const counter = use({
+  const counter = (now) => ({
     count: 0,
     add() {
-      const { count } = use();
-      use({ count: count + 1 });
+      const { count } = now();
+      now({ count: count + 1 });
     },
     async addAsync() {
-      const { add } = use();
+      const { add } = now();
       await new Promise((resolve) => setTimeout(resolve, 0));
       add();
     },
   });
-  const errModel = use({
-    errPayload() {
-      const { add } = counter();
+  const errModel = (now) => ({
+    errOutModel() {
+      const { add } = now(counter);
       add();
-      use([]);
+      const { test } = now(() => {});
+    },
+    errPayload() {
+      now([]);
     },
   });
-  const useCounter = counter;
-  const useErrModel = errModel;
+
+  prodNoCheck(() => {
+    const CounterProd = () => {
+      useModel(counter);
+      return <div />;
+    };
+    shallow(<CounterProd />);
+  });
 
   const ErrKeys = () => {
-    useCounter({});
+    useModel(counter, {});
     return <div />;
   };
   expect(() => {
@@ -59,16 +60,17 @@ test('render', (done) => {
   }).toThrow();
 
   const Counter = () => {
-    const { count } = useCounter();
-    const { add } = useCounter(['add']);
-    const { addAsync } = useCounter([]);
-    const { errPayload } = useErrModel();
+    const { count } = useModel(counter);
+    const { add } = useModel(counter, ['add']);
+    const { addAsync } = useModel(counter);
+    const { errOutModel, errPayload } = useModel(errModel, []);
 
     return (
       <>
         <p>{count}</p>
         <button id="add" onClick={add} />
         <button id="addAsync" onClick={addAsync} />
+        <button id="errOutModel" onClick={errOutModel} />
         <button id="errPayload" onClick={errPayload} />
       </>
     );
@@ -78,6 +80,9 @@ test('render', (done) => {
   wrapper.find('#add').simulate('click');
   wrapper.find('#addAsync').simulate('click');
 
+  expect(() => {
+    wrapper.find('#errOutModel').simulate('click');
+  }).toThrow();
   expect(() => {
     wrapper.find('#errPayload').simulate('click');
   }).toThrow();
