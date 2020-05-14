@@ -9,7 +9,7 @@ console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
 });
 
-const prodNoCheck = (fn) => {
+const withoutCheck = (fn) => {
   process.env.NODE_ENV = 'production';
   fn();
   process.env.NODE_ENV = 'test';
@@ -20,7 +20,7 @@ test('useModel', (done) => {
     useModel();
   }).toThrow();
 
-  const counter = (now) => ({
+  const counterModel = (now) => ({
     count: 0,
     add() {
       const { count } = now();
@@ -34,7 +34,7 @@ test('useModel', (done) => {
   });
   const errModel = (now) => ({
     errOutModel() {
-      const { add } = now(counter);
+      const { add } = now(counterModel);
       add();
       const { test } = now(() => {});
     },
@@ -43,16 +43,16 @@ test('useModel', (done) => {
     },
   });
 
-  prodNoCheck(() => {
+  withoutCheck(() => {
     const CounterProd = () => {
-      useModel(counter);
+      useModel(counterModel);
       return <div />;
     };
     shallow(<CounterProd />);
   });
 
   const ErrKeys = () => {
-    useModel(counter, {});
+    useModel(counterModel, {});
     return <div />;
   };
   expect(() => {
@@ -60,9 +60,9 @@ test('useModel', (done) => {
   }).toThrow();
 
   const Counter = () => {
-    const { count } = useModel(counter);
-    const { add } = useModel(counter, ['add']);
-    const { addAsync } = useModel(counter);
+    const { count } = useModel(counterModel);
+    const { add } = useModel(counterModel, ['add']);
+    const { addAsync } = useModel(counterModel);
     const { errOutModel, errPayload } = useModel(errModel, []);
 
     return (
