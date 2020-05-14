@@ -9,7 +9,7 @@ A state manager for React Hooks, maybe the simplest.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-Auto loading state ▧ Modules ▧ Re-render control
+Auto loading state ▨ Modules ▨ Re-render control
 
 ---
 
@@ -85,7 +85,7 @@ function Demo() {
 
 ## Demo
 
-[Ξ Live demo Ξ](https://codesandbox.io/s/flooks-gqye5)
+[∷ Live demo ∷](https://codesandbox.io/s/flooks-gqye5)
 
 ## API
 

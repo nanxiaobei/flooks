@@ -9,7 +9,7 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-自动 Loading state ▧ 模块化 ▧ 按需触发 Re-render
+自动 Loading state ▨ 模块化 ▨ 按需触发 Re-render
 
 ---
 
@@ -85,7 +85,7 @@ function Demo() {
 
 ## 演示
 
-[Ξ 在线演示 Ξ](https://codesandbox.io/s/flooks-gqye5)
+[∷ 在线演示 ∷](https://codesandbox.io/s/flooks-gqye5)
 
 ## API
 
