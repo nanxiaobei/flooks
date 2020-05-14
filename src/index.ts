@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 
 const run = Symbol();
 
-type Keys = undefined | string[];
-type RawModel = { [key: string]: any };
-type LitModel = RawModel & { [run]: { keys: Keys; setState: (newState: RawModel) => void }[] };
+type Deps = undefined | string[];
+type ModelData = { [key: string]: any };
+type LitModel = ModelData & { [run]: { deps: Deps; setState: (newState: ModelData) => void }[] };
 
-type Now = (next?: undefined | Model | RawModel) => any;
-export type Model = (now: Now) => RawModel;
-type UseModel = (model: Model, keys?: Keys) => LitModel;
+type Now = (next?: undefined | Model | ModelData) => any;
+export type Model = (now: Now) => ModelData;
+type UseModel = (model: Model, deps?: Deps) => LitModel;
 
 const ERR_PAYLOAD = 'payload should be an object';
 const ERR_MODEL = 'model should be a function';
-const ERR_KEYS = 'keys should be an array';
+const ERR_KEYS = 'deps should be an array';
 const ERR_OUT_MODEL = 'model passed to now() is not initialized';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
@@ -21,18 +21,18 @@ const setLoading = (litModel: LitModel, key: string, loading: boolean) => {
   const subs = litModel[run];
   const update = {};
 
-  subs.forEach(({ keys, setState }) => {
-    if (!keys || keys.includes(key)) setState(update);
+  subs.forEach(({ deps, setState }) => {
+    if (!deps || deps.includes(key)) setState(update);
   });
 };
 
 const map: WeakMap<Model | Function, any> = new WeakMap();
 
-const useModel: UseModel = (model, keys) => {
+const useModel: UseModel = (model, deps) => {
   const __DEV__ = process.env.NODE_ENV !== 'production';
   if (__DEV__) {
     if (typeof model !== 'function') throw new Error(ERR_MODEL);
-    if (keys !== undefined && !Array.isArray(keys)) throw new Error(ERR_KEYS);
+    if (deps !== undefined && !Array.isArray(deps)) throw new Error(ERR_KEYS);
   }
 
   let litModel: LitModel = map.get(model);
@@ -59,14 +59,14 @@ const useModel: UseModel = (model, keys) => {
       const nextKeys = Object.keys(next);
       const update = {};
 
-      subs.forEach(({ keys, setState }) => {
-        if (!keys || nextKeys.some((key) => keys.includes(key))) setState(update);
+      subs.forEach(({ deps, setState }) => {
+        if (!deps || nextKeys.some((key) => deps.includes(key))) setState(update);
       });
     };
 
-    const rawModel = model(now);
+    const modelData = model(now);
 
-    Object.entries(rawModel).forEach(([key, val]) => {
+    Object.entries(modelData).forEach(([key, val]) => {
       if (typeof val !== 'function') {
         litModel[key] = val;
       } else {
@@ -87,9 +87,9 @@ const useModel: UseModel = (model, keys) => {
   const [, setState] = useState();
 
   useEffect(() => {
-    if (keys && keys.length === 0) return;
+    if (deps && deps.length === 0) return;
     const subs = litModel[run];
-    const item = { keys, setState };
+    const item = { deps, setState };
     subs.push(item);
     return () => {
       subs.splice(subs.indexOf(item), 1);
