@@ -1,4 +1,4 @@
-# 🍸 flooks <sup><sup><sub>v2</sub></sup></sup>
+# 🍸 flooks <sup><sup><sub>3.0</sub></sup></sup>
 
 A state manager for React Hooks, maybe the simplest.
 
@@ -31,50 +31,46 @@ npm install flooks
 
 ## Example
 
-The simplest API of only `use`:
-
 ```js
 // counter.js
 
-import use from 'flooks';
-
-const counter = {
+const counter = (now) => ({
   count: 0,
   add() {
-    const { count } = use(); // <---- `use` get own model
-    use({ count: count + 1 }); // <-- `use` set own model
+    const { count } = now(); // <---- get own model
+    now({ count: count + 1 }); // <-- set own model
   },
-};
+});
 
-export default use(counter); // <---- `use` initialize a model
+export default counter;
 ```
 
 ```js
 // trigger.js
 
-import use from 'flooks';
 import counter from 'path/to/counter';
 
-const trigger = {
+const trigger = (now) => ({
   async addLater() {
-    const { add } = counter(); // <-- get other models
+    const { add } = now(counter); // <-- get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
-};
+});
 
-export default use(trigger);
+export default trigger;
 ```
 
 ```jsx
 // Demo.jsx
 
-import useCounter from 'path/to/counter';
-import useTrigger from 'path/to/trigger';
+import useModel from 'flooks';
+import counter from 'path/to/counter';
+import trigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // <-- `deps` re-render control
-  const { addLater } = useTrigger(); // <-- `addLater.loading` auto loading state
+  const { count, add } = useModel(counter, ['count']); // <-- `deps` re-render control
+  const { addLater } = useModel(trigger); // <-- `addLater.loading` auto loading state
   return (
     <>
       <p>{count}</p>
@@ -85,7 +81,7 @@ function Demo() {
 }
 ```
 
-**\* Auto loading state:** When a method `someMethod` is async, `someMethod.loading` can be used as its loading state.
+**\* Auto loading state:** When `someFn` is async, `someFn.loading` can be used as its loading state.
 
 ## Demo
 
@@ -93,41 +89,39 @@ function Demo() {
 
 ## API
 
-### `use()` as getter, get own model
+### `useModel(model, deps)`
 
 ```js
-const ownModel = use();
+const { a, b } = useModel((now) => data, ['a', 'b']);
 ```
 
-Call in a model, if passed no param, `use` will be a getter.
+A React Hook, pass a model `function`, returns the model data.
 
-### `use(payload)` as setter, update own model
-
-```js
-use(payload);
-```
-
-Call in a model, if passed `payload`, `use` will be a setter. `payload` should be an object.
-
-### `use(model)` as initializer, returns a React Hook, also a model getter
-
-```js
-const useSomeModel = use(model);
-```
-
-Call out of a model, returns `useSomeModel` Hook, also is `someModel` model getter (To escape React Hooks ESLint rule, when used in another model, recommended naming it different from hooks).
-
-**\* Re-render control:** **`useSomeModel(deps)`** has `deps` param, the same as that of `React.useEffect`:
+**\* Re-render control:** `deps` is optional, the same as that of `React.useEffect`:
 
 - If pass nothing, all updates in the model will trigger a re-render
 - If pass an empty array (`[]`), it will never trigger a re-render
-- If pass a dependency list (`['a', 'b']`), it will trigger a re-render only when one of the dependencies changes
+- If pass a dependency list (`['a', 'b']`), it will trigger a re-render only when any dependency changes
+
+### `now()`
+
+```js
+import someModel from 'path/to/someModel';
+
+const { a, b } = now(); // get own model
+const { c, d } = now(someModel); // get other models
+now(payload); // set own model
+```
+
+- `now()` to get own model
+- `now(someModel)` to get other models, `someModel` is a function
+- `now(payload)` to update own model, `payload` is an object
 
 ## Philosophy
 
 - The philosophy of flooks is decentralization, so recommend binding one component and one model as one.
 - No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
-- A model has its own space, when call `someModel()` in other models, all models can be connected.
+- A model has its own space, when call `now(someModel)` to get other models, all models can be connected.
 
 ## License
 

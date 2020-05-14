@@ -1,4 +1,4 @@
-# 🍸 flooks <sup><sup><sub>v2</sub></sup></sup>
+# 🍸 flooks <sup><sup><sub>3.0</sub></sup></sup>
 
 一个 React Hooks 状态管理器，也许是最简单的那个。
 
@@ -9,7 +9,7 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-自动 loading state ▧ 模块化 ▧ 按需触发 re-render
+自动 Loading state ▧ 模块化 ▧ 按需触发 Re-render
 
 ---
 
@@ -31,50 +31,46 @@ npm install flooks
 
 ## 示例
 
-最简洁的 API，只有 `use`：
-
 ```js
 // counter.js
 
-import use from 'flooks';
-
-const counter = {
+const counter = (now) => ({
   count: 0,
   add() {
-    const { count } = use(); // <---- `use` 获取自身 model
-    use({ count: count + 1 }); // <-- `use` 更新自身 model
+    const { count } = now(); // <---- 获取自身 model
+    now({ count: count + 1 }); // <-- 更新自身 model
   },
-};
+});
 
-export default use(counter); // <---- `use` 初始化 model
+export default counter;
 ```
 
 ```js
 // trigger.js
 
-import use from 'flooks';
 import counter from 'path/to/counter';
 
-const trigger = {
+const trigger = (now) => ({
   async addLater() {
-    const { add } = counter(); // <-- 获取其它 model
+    const { add } = now(counter); // <-- 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
-};
+});
 
-export default use(trigger);
+export default trigger;
 ```
 
 ```jsx
 // Demo.jsx
 
-import useCounter from 'path/to/counter';
-import useTrigger from 'path/to/trigger';
+import useModel from 'flooks';
+import counter from 'path/to/counter';
+import trigger from 'path/to/trigger';
 
 function Demo() {
-  const { count, add } = useCounter(['count']); // <-- `deps` 按需触发 re-render
-  const { addLater } = useTrigger(); // <-- `addLater.loading` 自动 loading state
+  const { count, add } = useModel(counter, ['count']); // <-- `deps` 按需触发 Re-render
+  const { addLater } = useModel(trigger); // <-- `addLater.loading` 自动 Loading state
   return (
     <>
       <p>{count}</p>
@@ -85,7 +81,7 @@ function Demo() {
 }
 ```
 
-**\* 自动 loading state：** 当方法 `someMethod` 为异步时，`someMethod.loading` 可用作其 loading 状态。
+**\* 自动 Loading state：** 当 `someFn` 为异步时，`someFn.loading` 可用作其 loading 状态。
 
 ## 演示
 
@@ -93,41 +89,39 @@ function Demo() {
 
 ## API
 
-### `use()` 作为 getter，获取自身 model
+### `useModel(model, deps)`
 
 ```js
-const ownModel = use();
+const { a, b } = useModel((now) => data, ['a', 'b']);
 ```
 
-在 model 内调用，若不传入参数，`use` 将用作 getter。
+React Hooks，传入 model `function`，返回 model 数据。
 
-### `use(payload)` 作为 setter，更新自身 model
+**\* 按需触发 Re-render:** `deps` 参数可选，与 `React.useEffect` 的相同：
+
+- 若不传入参数，所有 model 更新都将触发 Re-render
+- 若传入空数组（`[]`），永不触发 Re-render
+- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中某项变化时触发 Re-render
+
+### `now()`
 
 ```js
-use(payload);
+import someModel from 'path/to/someModel';
+
+const { a, b } = now(); // 获取自身 model
+const { c, d } = now(someModel); // 获取其它 model
+now(payload); // 更新自身 model
 ```
 
-在 model 内调用，若传入 `payload`，`use` 将用作 setter。`payload` 应为对象。
-
-### `use(model)` 用作初始化，返回 React Hooks，同时也是 model getter
-
-```js
-const useSomeModel = use(model);
-```
-
-在 model 外调用，返回 `useSomeModel` Hooks，同时也是 `someModel` model getter（为规避 React Hooks ESLint 规则，在其它 model 中调用时，建议命名与 Hooks 不同）。
-
-**\* 按需触发 re-render：** **`useSomeModel(deps)`** 的 `deps` 参数，与 `React.useEffect` 的相同：
-
-- 若不传入参数，所有 model 更新都将触发 re-render
-- 若传入空数组（`[]`），永不触发 re-render
-- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中的项变化时触发 re-render
+- `now()` 获取自身 model
+- `now(someModel)` 获取其它 model，`someModel` 为函数
+- `now(payload)` 更新自身 model，`payload` 为对象
 
 ## 理念
 
 - flooks 的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
 - 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
-- model 有自己的空间，同时通过在其它 model 中调用 `someModel()`，所有 model 可实现互通。
+- model 有自己的空间，同时通过 `now(someModel)` 获取其它 model，所有 model 可实现互通。
 
 ## 协议
 
