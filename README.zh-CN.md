@@ -95,7 +95,7 @@ function Demo() {
 const { a, b } = useModel((now) => data, ['a', 'b']);
 ```
 
-React Hooks，传入 model `function`，返回 model 数据。
+React Hooks，传入 model 函数，返回 model 数据。
 
 **\* 按需触发 Re-render:** `deps` 参数可选，与 `React.useEffect` 的相同：
 
@@ -106,22 +106,26 @@ React Hooks，传入 model `function`，返回 model 数据。
 ### `now()`
 
 ```js
-import someModel from 'path/to/someModel';
+import anotherModel from 'path/to/anotherModel';
 
-const { a, b } = now(); // 获取自身 model
-const { c, d } = now(someModel); // 获取其它 model
-now(payload); // 更新自身 model
+const ownModel = (now) => ({
+  fn() {
+    const { a, b } = now(); // 获取自身 model
+    const { c, d } = now(anotherModel); // 获取其它 model
+    now(payload); // 更新自身 model
+  },
+});
 ```
 
 - `now()` 获取自身 model
-- `now(someModel)` 获取其它 model，`someModel` 为函数
+- `now(anotherModel)` 获取其它 model
 - `now(payload)` 更新自身 model，`payload` 为对象
 
 ## 理念
 
 - flooks 的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
 - 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
-- model 有自己的空间，同时通过 `now(someModel)` 获取其它 model，所有 model 可实现互通。
+- model 有自己的空间，同时通过 `now(anotherModel)` 获取其它 model，所有 model 可实现互通。
 
 ## 协议
 

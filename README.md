@@ -95,7 +95,7 @@ function Demo() {
 const { a, b } = useModel((now) => data, ['a', 'b']);
 ```
 
-A React Hook, pass a model `function`, returns the model data.
+A React Hook, pass a model function, returns the model data.
 
 **\* Re-render control:** `deps` is optional, the same as that of `React.useEffect`:
 
@@ -106,22 +106,26 @@ A React Hook, pass a model `function`, returns the model data.
 ### `now()`
 
 ```js
-import someModel from 'path/to/someModel';
+import anotherModel from 'path/to/anotherModel';
 
-const { a, b } = now(); // get own model
-const { c, d } = now(someModel); // get other models
-now(payload); // set own model
+const ownModel = (now) => ({
+  fn() {
+    const { a, b } = now(); // get own model
+    const { x, y } = now(anotherModel); // get other models
+    now(payload); // set own model
+  },
+});
 ```
 
 - `now()` to get own model
-- `now(someModel)` to get other models, `someModel` is a function
+- `now(anotherModel)` to get other models
 - `now(payload)` to update own model, `payload` is an object
 
 ## Philosophy
 
 - The philosophy of flooks is decentralization, so recommend binding one component and one model as one.
 - No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
-- A model has its own space, when call `now(someModel)` to get other models, all models can be connected.
+- A model has its own space, when call `now(anotherModel)` to get other models, all models can be connected.
 
 ## License
 
