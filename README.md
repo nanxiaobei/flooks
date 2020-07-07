@@ -21,11 +21,9 @@ English | [简体中文](./README.zh-CN.md)
 
 ```sh
 yarn add flooks
-```
 
-or
+# or
 
-```sh
 npm install flooks
 ```
 
