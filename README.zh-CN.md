@@ -48,7 +48,7 @@ export default counter;
 ```js
 // trigger.js
 
-import counter from 'path/to/counter';
+import counter from './counter';
 
 const trigger = (now) => ({
   async addLater() {
@@ -65,8 +65,8 @@ export default trigger;
 // Demo.jsx
 
 import useModel from 'flooks';
-import counter from 'path/to/counter';
-import trigger from 'path/to/trigger';
+import counter from './counter';
+import trigger from './trigger';
 
 function Demo() {
   const { count, add } = useModel(counter, ['count']); // <-- `deps` 按需触发 Re-render
@@ -106,7 +106,7 @@ React Hooks，传入 model 函数，返回 model 数据。
 ### `now()`
 
 ```js
-import anotherModel from 'path/to/anotherModel';
+import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
   fn() {

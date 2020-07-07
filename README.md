@@ -48,7 +48,7 @@ export default counter;
 ```js
 // trigger.js
 
-import counter from 'path/to/counter';
+import counter from './counter';
 
 const trigger = (now) => ({
   async addLater() {
@@ -65,8 +65,8 @@ export default trigger;
 // Demo.jsx
 
 import useModel from 'flooks';
-import counter from 'path/to/counter';
-import trigger from 'path/to/trigger';
+import counter from './counter';
+import trigger from './trigger';
 
 function Demo() {
   const { count, add } = useModel(counter, ['count']); // <-- `deps` re-render control
@@ -106,7 +106,7 @@ A React Hook, pass a model function, returns the model data.
 ### `now()`
 
 ```js
-import anotherModel from 'path/to/anotherModel';
+import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
   fn() {
