@@ -30,7 +30,7 @@ npm install flooks
 ## 示例
 
 ```js
-// counter.js
+// counter model
 
 const counter = (now) => ({
   count: 0,
@@ -44,7 +44,7 @@ export default counter;
 ```
 
 ```js
-// trigger.js
+// trigger model
 
 import counter from './counter';
 
@@ -60,7 +60,7 @@ export default trigger;
 ```
 
 ```jsx
-// Demo.jsx
+// Demo 组件
 
 import useModel from 'flooks';
 import counter from './counter';
@@ -69,6 +69,7 @@ import trigger from './trigger';
 function Demo() {
   const { count, add } = useModel(counter, ['count']); // <-- `deps` 按需触发 Re-render
   const { addLater } = useModel(trigger); // <-- `addLater.loading` 自动 Loading state
+
   return (
     <>
       <p>{count}</p>
