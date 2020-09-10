@@ -13,7 +13,7 @@ Auto loading state ▨ Modules ▨ Re-render control
 
 ---
 
-English | [简体中文](./README.zh-CN.md)
+English × [简体中文](./README.zh-CN.md)
 
 ---
 
@@ -35,8 +35,8 @@ npm install flooks
 const counter = (now) => ({
   count: 0,
   add() {
-    const { count } = now(); // <---- get own model
-    now({ count: count + 1 }); // <-- set own model
+    const { count } = now(); // <----- now()        :: get own model
+    now({ count: count + 1 }); // <--- now(payload) :: set own model
   },
 });
 
@@ -50,7 +50,7 @@ import counter from './counter';
 
 const trigger = (now) => ({
   async addLater() {
-    const { add } = now(counter); // <-- get other models
+    const { add } = now(counter); // <-- now(model) :: get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -60,15 +60,15 @@ export default trigger;
 ```
 
 ```jsx
-// Demo Component
+// App component
 
 import useModel from 'flooks';
 import counter from './counter';
 import trigger from './trigger';
 
-function Demo() {
-  const { count, add } = useModel(counter, ['count']); // <-- `deps` re-render control
-  const { addLater } = useModel(trigger); // <-- `addLater.loading` auto loading state
+function App() {
+  const { count, add } = useModel(counter, ['count']); // <-- ['count'] :: re-render control
+  const { addLater } = useModel(trigger); // <-------- addLater.loading :: auto loading state
 
   return (
     <>
@@ -80,7 +80,7 @@ function Demo() {
 }
 ```
 
-**\* Auto loading state:** When `someFn` is async, `someFn.loading` can be used as its loading state.
+**\* Auto loading state** - When `someFn` is async, `someFn.loading` can be used as its loading state.
 
 ## Demo
 
@@ -90,39 +90,37 @@ function Demo() {
 
 ### `useModel(model, deps)`
 
+A React Hook, pass a `model`, returns the model data.
+
+**\* Re-render control** - `deps` is optional, the same as that of `React.useEffect`.
+
 ```js
-const { a, b } = useModel((now) => data, ['a', 'b']);
+const { a, b } = useModel(someModel, ['a', 'b']);
+
+// useModel(model) <-------------- now(payload) always trigger a re-render
+// useModel(model, []) <---------- now(payload) never trigger a re-render
+// useModel(model, ['a', 'b']) <-- now(payload) trigger a re-render when a or b inside payload
 ```
 
-A React Hook, pass a model function, returns the model data.
-
-**\* Re-render control:** `deps` is optional, the same as that of `React.useEffect`:
-
-- If pass nothing, all updates in the model will trigger a re-render
-- If pass an empty array (`[]`), it will never trigger a re-render
-- If pass a dependency list (`['a', 'b']`), it will trigger a re-render only when any dependency changes
-
 ### `now()`
+
+`now` is the param to `model`, can be used in 3 ways.
 
 ```js
 import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
   fn() {
-    const { a, b } = now(); // get own model
-    const { x, y } = now(anotherModel); // get other models
-    now(payload); // set own model
+    const { a, b } = now(); // <-------------- 1. get own model
+    now({ a: a + b }); // <------------------- 2. update own model (payload is an object)
+    const { x, y } = now(anotherModel); // <-- 3. get other models
   },
 });
 ```
 
-- `now()` to get own model
-- `now(anotherModel)` to get other models
-- `now(payload)` to update own model, `payload` is an object
-
 ## Philosophy
 
-- The philosophy of flooks is decentralization, so recommend binding one component and one model as one.
+- The philosophy of flooks is decentralization, so recommend binding a page component and a model as one.
 - No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
 - A model has its own space, when call `now(anotherModel)` to get other models, all models can be connected.
 

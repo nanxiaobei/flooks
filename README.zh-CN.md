@@ -13,7 +13,7 @@
 
 ---
 
-[English](./README.md) | 简体中文
+[English](./README.md) × 简体中文
 
 ---
 
@@ -35,8 +35,8 @@ npm install flooks
 const counter = (now) => ({
   count: 0,
   add() {
-    const { count } = now(); // <---- 获取自身 model
-    now({ count: count + 1 }); // <-- 更新自身 model
+    const { count } = now(); // <----- now()        :: 获取自身 model
+    now({ count: count + 1 }); // <--- now(payload) :: 更新自身 model
   },
 });
 
@@ -50,7 +50,7 @@ import counter from './counter';
 
 const trigger = (now) => ({
   async addLater() {
-    const { add } = now(counter); // <-- 获取其它 model
+    const { add } = now(counter); // <-- now(model) :: 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
@@ -60,15 +60,15 @@ export default trigger;
 ```
 
 ```jsx
-// Demo 组件
+// App 组件
 
 import useModel from 'flooks';
 import counter from './counter';
 import trigger from './trigger';
 
-function Demo() {
-  const { count, add } = useModel(counter, ['count']); // <-- `deps` 按需触发 Re-render
-  const { addLater } = useModel(trigger); // <-- `addLater.loading` 自动 Loading state
+function App() {
+  const { count, add } = useModel(counter, ['count']); // <-- ['count'] :: 按需触发 Re-render
+  const { addLater } = useModel(trigger); // <-------- addLater.loading :: 自动 Loading state
 
   return (
     <>
@@ -80,7 +80,7 @@ function Demo() {
 }
 ```
 
-**\* 自动 Loading state：** 当 `someFn` 为异步时，`someFn.loading` 可用作其 loading 状态。
+**\* 自动 Loading state** - 当 `someFn` 为异步时，`someFn.loading` 可用作其 loading 状态。
 
 ## 演示
 
@@ -90,39 +90,37 @@ function Demo() {
 
 ### `useModel(model, deps)`
 
+React Hooks，传入 `model`，返回 model 数据。
+
+**\* 按需触发 Re-render** - `deps` 参数可选，与 `React.useEffect` 的相同。
+
 ```js
-const { a, b } = useModel((now) => data, ['a', 'b']);
+const { a, b } = useModel(someModel, ['a', 'b']);
+
+// useModel(model) <-------------- now(payload) 每次都触发 Re-render
+// useModel(model, []) <---------- now(payload) 永不触发 Re-render
+// useModel(model, ['a', 'b']) <-- now(payload) 将触发 Re-render，当 a 或 b 在 payload 中时
 ```
 
-React Hooks，传入 model 函数，返回 model 数据。
-
-**\* 按需触发 Re-render:** `deps` 参数可选，与 `React.useEffect` 的相同：
-
-- 若不传入参数，所有 model 更新都将触发 Re-render
-- 若传入空数组（`[]`），永不触发 Re-render
-- 如果传入依赖列表（`['a', 'b']`），仅当依赖列表中某项变化时触发 Re-render
-
 ### `now()`
+
+`now` 为 `model` 的参数，有 3 种使用方式。
 
 ```js
 import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
   fn() {
-    const { a, b } = now(); // 获取自身 model
-    const { c, d } = now(anotherModel); // 获取其它 model
-    now(payload); // 更新自身 model
+    const { a, b } = now(); // <-------------- 1. 获取自身 model
+    now({ a: a + b }); // <------------------- 2. 更新自身 model（payload 为对象）
+    const { x, y } = now(anotherModel); // <-- 3. 获取其它 model
   },
 });
 ```
 
-- `now()` 获取自身 model
-- `now(anotherModel)` 获取其它 model
-- `now(payload)` 更新自身 model，`payload` 为对象
-
 ## 理念
 
-- flooks 的理念是去中心化，因此建议将单个组件与 model 绑定为一个整体。
+- flooks 的理念是去中心化，因此建议将每个页面组件与 model 绑定为一个整体。
 - 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
 - model 有自己的空间，同时通过 `now(anotherModel)` 获取其它 model，所有 model 可实现互通。
 
