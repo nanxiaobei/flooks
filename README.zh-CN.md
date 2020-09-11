@@ -88,11 +88,11 @@ function App() {
 
 ## API
 
-### `useModel(model, deps)`
+### `useModel()`
 
-React Hooks，传入 `model`，返回 model 数据。
+传入 `model`，返回 model 数据。
 
-**\* 按需触发 Re-render** - `deps` 参数可选，与 `React.useEffect` 的相同。
+**\* 按需触发 Re-render** - `useModel(model, deps)`, `deps` 可选，与 `useEffect` 的相同。
 
 ```js
 const { a, b } = useModel(someModel, ['a', 'b']);
@@ -110,7 +110,7 @@ const { a, b } = useModel(someModel, ['a', 'b']);
 import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
-  fn() {
+  modelFn() {
     const { a, b } = now(); // <-------------- 1. 获取自身 model
     now({ a: a + b }); // <------------------- 2. 更新自身 model（payload 为对象）
     const { x, y } = now(anotherModel); // <-- 3. 获取其它 model

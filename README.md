@@ -88,11 +88,11 @@ function App() {
 
 ## API
 
-### `useModel(model, deps)`
+### `useModel()`
 
-A React Hook, pass a `model`, returns the model data.
+Pass a `model`, returns the model data.
 
-**\* Re-render control** - `deps` is optional, the same as that of `React.useEffect`.
+**\* Re-render control** - `useModel(model, deps)`, `deps` is optional, same as that of `useEffect`.
 
 ```js
 const { a, b } = useModel(someModel, ['a', 'b']);
@@ -110,7 +110,7 @@ const { a, b } = useModel(someModel, ['a', 'b']);
 import anotherModel from './anotherModel';
 
 const ownModel = (now) => ({
-  fn() {
+  modelFn() {
     const { a, b } = now(); // <-------------- 1. get own model
     now({ a: a + b }); // <------------------- 2. update own model (payload is an object)
     const { x, y } = now(anotherModel); // <-- 3. get other models
