@@ -1,102 +1,127 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
-const run = Symbol();
+type Snap = { [key: string]: any };
+type Updater = (payload: Snap) => void;
+type Reducer = (payload: Snap) => Snap;
 
-type Deps = undefined | string[];
-type ModelData = { [key: string]: any };
-type LitModel = ModelData & { [run]: { deps: Deps; setState: (newState: ModelData) => void }[] };
+type GetSnap = (model?: Model) => Snap;
+type SetSnap = (payload: Snap | Reducer) => void;
 
-type Now = (next?: undefined | Model | ModelData) => any;
-export type Model = (now: Now) => ModelData;
-type UseModel = (model: Model, deps?: Deps) => LitModel;
+export type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
+type UseModel = (model: Model) => Snap;
 
-const ERR_PAYLOAD = 'payload should be an object';
 const ERR_MODEL = 'model should be a function';
-const ERR_KEYS = 'deps should be an array';
-const ERR_OUT_MODEL = 'model passed to now() is not initialized';
+const ERR_PAYLOAD = 'payload should be an object or a function';
+const ERR_OUT_MODEL = 'model passed to get() is not initialized';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
-const setLoading = (litModel: LitModel, key: string, loading: boolean) => {
-  litModel[key].loading = loading;
-  const subs = litModel[run];
-  const update = {};
+const map: WeakMap<Model, any> = new WeakMap();
 
-  subs.forEach(({ deps, setState }) => {
-    if (!deps || deps.includes(key)) setState(update);
-  });
-};
-
-const map: WeakMap<Model | Function, any> = new WeakMap();
-
-const useModel: UseModel = (model, deps) => {
+const useModel: UseModel = (model) => {
   const __DEV__ = process.env.NODE_ENV !== 'production';
-  if (__DEV__) {
-    if (typeof model !== 'function') throw new Error(ERR_MODEL);
-    if (deps !== undefined && !Array.isArray(deps)) throw new Error(ERR_KEYS);
-  }
+  if (__DEV__ && typeof model !== 'function') throw new Error(ERR_MODEL);
 
-  let litModel: LitModel = map.get(model);
-  if (!litModel) {
-    const proto = Object.defineProperty({}, run, { value: [] });
-    litModel = Object.setPrototypeOf({}, proto);
+  // global model
+  let [modelData, modelSubs]: [Snap, Updater[]] = map.get(model) || [];
 
-    const now: Now = (next) => {
-      // get own
-      if (next === undefined) return litModel;
+  if (!modelData) {
+    const get: GetSnap = (outModel) => {
+      if (typeof outModel === 'undefined') return modelData;
 
-      // get others
-      if (typeof next === 'function') {
-        const outModel = map.get(next);
-        if (__DEV__ && !outModel) throw new Error(ERR_OUT_MODEL);
-        return outModel;
-      }
-
-      // set own
-      if (__DEV__ && notObj(next)) throw new Error(ERR_PAYLOAD);
-
-      Object.assign(litModel, next);
-      const subs = litModel[run];
-      const nextKeys = Object.keys(next);
-      const update = {};
-
-      subs.forEach(({ deps, setState }) => {
-        if (!deps || nextKeys.some((key) => deps.includes(key))) setState(update);
-      });
+      const [outData] = map.get(outModel);
+      if (__DEV__ && !outData) throw new Error(ERR_OUT_MODEL);
+      return outData;
     };
 
-    const modelData = model(now);
-
-    Object.entries(modelData).forEach(([key, val]) => {
-      if (typeof val !== 'function') {
-        litModel[key] = val;
-      } else {
-        litModel[key] = (...args: any) => {
-          const res = val(...args);
-          if (!res || typeof res.then !== 'function') return res;
-          setLoading(litModel, key, true);
-          return res.finally(() => {
-            setLoading(litModel, key, false);
-          });
-        };
+    const set: SetSnap = (payload) => {
+      if (typeof payload === 'function') {
+        payload = payload(modelData);
+      } else if (__DEV__ && notObj(payload)) {
+        throw new Error(ERR_PAYLOAD);
       }
-    });
 
-    map.set(model, litModel);
+      Object.assign(modelData, payload);
+      modelSubs.forEach((updater) => updater(payload));
+    };
+
+    modelData = model({ get, set });
+    modelSubs = [];
+    map.set(model, [modelData, modelSubs]);
   }
 
+  // local model
+  const resData = useRef<Snap>({});
+  const stateMap = useRef<Snap>({});
+
+  const hasChange = useRef(false);
   const [, setState] = useState();
 
-  useEffect(() => {
-    if (deps && deps.length === 0) return;
-    const subs = litModel[run];
-    const item = { deps, setState };
-    subs.push(item);
-    return () => {
-      subs.splice(subs.indexOf(item), 1);
-    };
-  }, []);
+  useMemo(() => {
+    const target: Snap = {};
 
-  return litModel;
+    resData.current = new Proxy(
+      {},
+      {
+        get: (_, key: string) => {
+          const val = modelData[key];
+
+          if (key in target) {
+            if (key in stateMap.current) target[key] = val;
+            return target[key];
+          }
+
+          if (typeof val !== 'function') {
+            stateMap.current[key] = true;
+            target[key] = val;
+            return target[key];
+          }
+
+          target[key] = new Proxy(val, {
+            get: (fn, prop) => {
+              if (prop === 'loading' && !('loading' in fn)) fn.loading = false;
+              return fn[prop];
+            },
+            apply: (fn, that, args) => {
+              const res = fn.apply(that, args);
+              if (!('loading' in fn) || !res || typeof res.then !== 'function') return res;
+
+              fn.loading = true;
+              setState({});
+              return res.finally(() => {
+                fn.loading = false;
+                setState({});
+              });
+            },
+          });
+
+          return target[key];
+        },
+        set: (_, key: string) => {
+          if (!hasChange.current && key in target) hasChange.current = true;
+          return true;
+        },
+      }
+    );
+  }, [modelData]);
+
+  useEffect(() => {
+    if (Object.keys(stateMap.current).length === 0) return;
+
+    const updater: Updater = (payload) => {
+      Object.assign(resData.current, payload);
+      if (hasChange.current) {
+        hasChange.current = false;
+        setState({});
+      }
+    };
+
+    modelSubs.push(updater);
+    return () => {
+      modelSubs.splice(modelSubs.indexOf(updater), 1);
+    };
+  }, [modelSubs]);
+
+  return resData.current;
 };
 
 export default useModel;
