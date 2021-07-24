@@ -28,7 +28,7 @@ const useModel: UseModel = (model) => {
     const get: GetSnap = (outModel) => {
       if (typeof outModel === 'undefined') return modelData;
 
-      const [outData] = map.get(outModel);
+      const outData = map.get(outModel)?.[0];
       if (__DEV__ && !outData) throw new Error(ERR_OUT_MODEL);
       return outData;
     };
@@ -51,32 +51,31 @@ const useModel: UseModel = (model) => {
 
   // local model
   const resData = useRef<Snap>({});
-  const stateMap = useRef<Snap>({});
 
-  const hasChange = useRef(false);
+  const hasState = useRef(false);
+  const hasUpdate = useRef(false);
   const [, setState] = useState({});
 
   useMemo(() => {
-    const target: Snap = {};
+    const state: Snap = {};
+    const actions: Snap = {};
 
     resData.current = new Proxy(
       {},
       {
         get: (_, key: string) => {
-          const val = modelData[key];
+          if (key in actions) return actions[key];
 
-          if (key in target) {
-            if (key in stateMap.current) target[key] = val;
-            return target[key];
-          }
+          const val = modelData[key];
+          if (key in state) return val;
 
           if (typeof val !== 'function') {
-            stateMap.current[key] = true;
-            target[key] = val;
-            return target[key];
+            hasState.current = true;
+            state[key] = val;
+            return val;
           }
 
-          target[key] = new Proxy(val, {
+          actions[key] = new Proxy(val, {
             get: (fn, prop) => {
               if (prop === 'loading' && !('loading' in fn)) fn.loading = false;
               return fn[prop];
@@ -94,10 +93,10 @@ const useModel: UseModel = (model) => {
             },
           });
 
-          return target[key];
+          return actions[key];
         },
         set: (_, key: string) => {
-          if (!hasChange.current && key in target) hasChange.current = true;
+          if (!hasUpdate.current && key in state) hasUpdate.current = true;
           return true;
         },
       }
@@ -105,12 +104,12 @@ const useModel: UseModel = (model) => {
   }, [modelData]);
 
   useEffect(() => {
-    if (Object.keys(stateMap.current).length === 0) return;
+    if (!hasState.current) return;
 
     const updater: Updater = (payload) => {
       Object.assign(resData.current, payload);
-      if (hasChange.current) {
-        hasChange.current = false;
+      if (hasUpdate.current) {
+        hasUpdate.current = false;
         setState({});
       }
     };
