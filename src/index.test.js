@@ -11,7 +11,7 @@ console.error = jest.fn((msg) => {
 });
 
 test('useModel', (done) => {
-  const countModel = ({ get, set }) => ({
+  const counter = ({ get, set }) => ({
     count: 0,
     open: false,
     add() {
@@ -28,21 +28,21 @@ test('useModel', (done) => {
     },
   });
 
-  const errModel = ({ get, set }) => ({
+  const error = ({ get, set }) => ({
     errPayload() {
       set([]);
     },
     errOutModel() {
-      const { add } = get(countModel);
+      const { add } = get(counter);
       add();
       const { notExist } = get(1);
     },
   });
 
-  const Count = () => {
-    const { count, add, addLater } = useModel(countModel);
-    const { open, toggle } = useModel(countModel);
-    const { errPayload, errOutModel } = useModel(errModel);
+  const Counter = () => {
+    const { count, add, addLater } = useModel(counter);
+    const { open, toggle } = useModel(counter);
+    const { errPayload, errOutModel } = useModel(error);
 
     return (
       <>
@@ -57,7 +57,7 @@ test('useModel', (done) => {
     );
   };
 
-  const wrapper = mount(<Count />);
+  const wrapper = mount(<Counter />);
   const click = (el) => wrapper.find(el).simulate('click');
   const threw = (fn) => expect(fn).toThrow();
 
