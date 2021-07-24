@@ -14,7 +14,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     'plugin:react-hooks/recommended',
-    'prettier/@typescript-eslint',
+    'prettier',
   ],
   env: {
     browser: true,
@@ -36,6 +36,7 @@ module.exports = {
     'consistent-return': 'off',
     'no-param-reassign': 'off',
     'no-underscore-dangle': 'off',
+    'no-use-before-define': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
   },
 };
