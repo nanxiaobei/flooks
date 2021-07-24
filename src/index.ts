@@ -54,7 +54,7 @@ const useModel: UseModel = (model) => {
   const stateMap = useRef<Snap>({});
 
   const hasChange = useRef(false);
-  const [, setState] = useState();
+  const [, setState] = useState({});
 
   useMemo(() => {
     const target: Snap = {};
