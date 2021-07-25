@@ -18,7 +18,7 @@ test('useModel', (done) => {
       const { count } = get();
       set({ count: count + 1 });
     },
-    async addLater() {
+    async addAsync() {
       await new Promise((resolve) => setTimeout(resolve, 0));
       const { add } = get();
       add();
@@ -40,7 +40,7 @@ test('useModel', (done) => {
   });
 
   const Counter = () => {
-    const { count, add, addLater } = useModel(counter);
+    const { count, add, addAsync } = useModel(counter);
     const { open, toggle } = useModel(counter);
     const { errPayload, errOutModel } = useModel(error);
 
@@ -49,7 +49,7 @@ test('useModel', (done) => {
         <p>{count}</p>
         <p>{open}</p>
         <button id="add" onClick={add} />
-        <button id="addLater" onClick={addLater} data-loading={addLater.loading} />
+        <button id="addAsync" onClick={addAsync} data-loading={addAsync.loading} />
         <button id="toggle" onClick={toggle} />
         <button id="errPayload" onClick={errPayload} />
         <button id="errOutModel" onClick={errOutModel} />
@@ -62,7 +62,7 @@ test('useModel', (done) => {
   const threw = (fn) => expect(fn).toThrow();
 
   click('#add');
-  click('#addLater');
+  click('#addAsync');
   click('#toggle');
 
   threw(() => useModel());
