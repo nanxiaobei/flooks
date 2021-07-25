@@ -1,6 +1,6 @@
-# 🍸 flooks <sup><sup><sub>3.0</sub></sup></sup>
+# 🍸 flooks <sup><sup><sub>v4</sub></sup></sup>
 
-一个 React Hooks 状态管理器，也许是最简单的那个。
+一个 React Hooks 状态管理器，支持惊人的 Re-render 自动优化。
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -9,120 +9,88 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-自动 Loading state ▨ 模块化 ▨ 按需触发 Re-render
+自动 Loading ▨ 强大的模块化 ▨ Re-render 优化
 
 ---
 
-[English](./README.md) × 简体中文
+[English](./README.md) | 简体中文
 
 ---
 
 ## 安装
 
 ```sh
-yarn add flooks
-
-# 或
-
-npm install flooks
+yarn add flooks # or → npm install flooks
 ```
 
-## 示例
+## 使用
 
-```js
-// counter model
+```jsx
+import useModel from 'flooks';
 
-const counter = (now) => ({
+const counter = ({ get, set }) => ({
   count: 0,
   add() {
-    const { count } = now(); // <----- now()        :: 获取自身 model
-    now({ count: count + 1 }); // <--- now(payload) :: 更新自身 model
+    const { count } = get();
+    set({ count: count + 1 });
+    // set(state => ({ count: state.count + 1 })); ← 同时支持
   },
-});
-
-export default counter;
-```
-
-```js
-// trigger model
-
-import counter from './counter';
-
-const trigger = (now) => ({
-  async addLater() {
-    const { add } = now(counter); // <-- now(model) :: 获取其它 model
+  async addAsync() {
+    const { add } = get();
+    // const outData = get(outModel); ← 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
 });
 
-export default trigger;
-```
-
-```jsx
-// App 组件
-
-import useModel from 'flooks';
-import counter from './counter';
-import trigger from './trigger';
-
-function App() {
-  const { count, add } = useModel(counter, ['count']); // <-- ['count'] :: 按需触发 Re-render
-  const { addLater } = useModel(trigger); // <-------- addLater.loading :: 自动 Loading state
+function Counter() {
+  const { count, add, addAsync } = useModel(counter); // 试试 addAsync.loading!
 
   return (
     <>
       <p>{count}</p>
       <button onClick={add}>+</button>
-      <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
+      <button onClick={addAsync}>+~ {addAsync.loading && '...'}</button>
     </>
   );
 }
 ```
 
-**\* 自动 Loading state** - 当 `someFn` 为异步时，`someFn.loading` 可用作其 loading 状态。
+**\* 自动 Loading** - 若 `someFn` 为异步函数，`someFn.loading` 可用作其 loading 状态。
 
-## 演示
+## 示例
 
-[∷ 在线演示 ∷](https://codesandbox.io/s/flooks-gqye5)
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
 
 ## API
 
 ### `useModel()`
 
-传入 `model`，返回 model 数据。
-
-**\* 按需触发 Re-render** - `useModel(model, deps)`, `deps` 可选，与 `useEffect` 的相同。
-
 ```js
-const { a, b } = useModel(someModel, ['a', 'b']);
-
-// useModel(model) <-------------- now(payload) 每次都触发 Re-render
-// useModel(model, []) <---------- now(payload) 永不触发 Re-render
-// useModel(model, ['a', 'b']) <-- now(payload) 将触发 Re-render，当 a 或 b 在 payload 中时
+const { a, b } = useModel(someModel);
 ```
 
-### `now()`
-
-`now` 为 `model` 的参数，有 3 种使用方式。
+### `get()` & `set()`
 
 ```js
-import anotherModel from './anotherModel';
+import outModel from './outModel';
 
-const ownModel = (now) => ({
-  modelFn() {
-    const { a, b } = now(); // <-------------- 1. 获取自身 model
-    now({ a: a + b }); // <------------------- 2. 更新自身 model（payload 为对象）
-    const { x, y } = now(anotherModel); // <-- 3. 获取其它 model
+const someModel = ({ get, set }) => ({
+  someFn() {
+    const { a, b } = get();
+    const { x, y } = get(outModel);
+
+    set({ a: a + b });
+    set((state) => ({ a: state.a + state.b }));
   },
 });
 ```
 
 ## 理念
 
-- flooks 的理念是去中心化，因此建议将每个页面组件与 model 绑定为一个整体。
+- flooks 的理念是去中心化，因此建议将页面组件与 model 绑定为一个整体。
 - 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
-- model 有自己的空间，同时通过 `now(anotherModel)` 获取其它 model，所有 model 可实现互通。
+- model 有自己的空间，同时通过 `get(outModel)` 获取其它 model，所有 model 可实现互通。
 
 ## 协议
 

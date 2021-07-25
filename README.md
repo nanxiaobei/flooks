@@ -1,6 +1,6 @@
-# 🍸 flooks <sup><sup><sub>3.0</sub></sup></sup>
+# 🍸 flooks <sup><sup><sub>v4</sub></sup></sup>
 
-A state manager for React Hooks, maybe the simplest.
+A state manager for React Hooks, with gorgeous re-render auto optimization.
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -9,111 +9,79 @@ A state manager for React Hooks, maybe the simplest.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-Auto loading state ▨ Modules ▨ Re-render control
+Auto-loading ▨ Powerful modules ▨ Re-render optimization
 
 ---
 
-English × [简体中文](./README.zh-CN.md)
+English | [简体中文](./README.zh-CN.md)
 
 ---
 
 ## Install
 
 ```sh
-yarn add flooks
-
-# or
-
-npm install flooks
+yarn add flooks # or → npm install flooks
 ```
 
-## Example
+## Usage
 
-```js
-// counter model
+```jsx
+import useModel from 'flooks';
 
-const counter = (now) => ({
+const counter = ({ get, set }) => ({
   count: 0,
   add() {
-    const { count } = now(); // <----- now()        :: get own model
-    now({ count: count + 1 }); // <--- now(payload) :: set own model
+    const { count } = get();
+    set({ count: count + 1 });
+    // set(state => ({ count: state.count + 1 })); ← also support
   },
-});
-
-export default counter;
-```
-
-```js
-// trigger model
-
-import counter from './counter';
-
-const trigger = (now) => ({
-  async addLater() {
-    const { add } = now(counter); // <-- now(model) :: get other models
+  async addAsync() {
+    const { add } = get();
+    // const outData = get(outModel); ← get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
   },
 });
 
-export default trigger;
-```
-
-```jsx
-// App component
-
-import useModel from 'flooks';
-import counter from './counter';
-import trigger from './trigger';
-
-function App() {
-  const { count, add } = useModel(counter, ['count']); // <-- ['count'] :: re-render control
-  const { addLater } = useModel(trigger); // <-------- addLater.loading :: auto loading state
+function Counter() {
+  const { count, add, addAsync } = useModel(counter); // try addAsync.loading!
 
   return (
     <>
       <p>{count}</p>
       <button onClick={add}>+</button>
-      <button onClick={addLater}>+ ⌛{addLater.loading && '...'}</button>
+      <button onClick={addAsync}>+~ {addAsync.loading && '...'}</button>
     </>
   );
 }
 ```
 
-**\* Auto loading state** - When `someFn` is async, `someFn.loading` can be used as its loading state.
+**\* Auto-loading** - If `someFn` is async, `someFn.loading` can be used as its loading state.
 
 ## Demo
 
-[∷ Live demo ∷](https://codesandbox.io/s/flooks-gqye5)
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
 
 ## API
 
 ### `useModel()`
 
-Pass a `model`, returns the model data.
-
-**\* Re-render control** - `useModel(model, deps)`, `deps` is optional, same as that of `useEffect`.
-
 ```js
-const { a, b } = useModel(someModel, ['a', 'b']);
-
-// useModel(model) <-------------- now(payload) always trigger a re-render
-// useModel(model, []) <---------- now(payload) never trigger a re-render
-// useModel(model, ['a', 'b']) <-- now(payload) trigger a re-render when a or b inside payload
+const { a, b } = useModel(someModel);
 ```
 
-### `now()`
-
-`now` is the param to `model`, can be used in 3 ways.
+### `get()` & `set()`
 
 ```js
-import anotherModel from './anotherModel';
+import outModel from './outModel';
 
-const ownModel = (now) => ({
-  modelFn() {
-    const { a, b } = now(); // <-------------- 1. get own model
-    now({ a: a + b }); // <------------------- 2. update own model (payload is an object)
-    const { x, y } = now(anotherModel); // <-- 3. get other models
+const someModel = ({ get, set }) => ({
+  someFn() {
+    const { a, b } = get();
+    const { x, y } = get(outModel);
+
+    set({ a: a + b });
+    set((state) => ({ a: state.a + state.b }));
   },
 });
 ```
@@ -122,7 +90,7 @@ const ownModel = (now) => ({
 
 - The philosophy of flooks is decentralization, so recommend binding a page component and a model as one.
 - No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
-- A model has its own space, when call `now(anotherModel)` to get other models, all models can be connected.
+- A model has its own space, when call `get(outModel)` to get other models, all models can be connected.
 
 ## License
 
