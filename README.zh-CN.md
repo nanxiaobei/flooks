@@ -20,7 +20,9 @@
 ## 安装
 
 ```sh
-yarn add flooks # or → npm install flooks
+yarn add flooks
+
+# npm install flooks
 ```
 
 ## 使用
@@ -33,13 +35,13 @@ const counter = ({ get, set }) => ({
   add() {
     const { count } = get();
     set({ count: count + 1 });
-    // set(state => ({ count: state.count + 1 })); ← 同时支持
+    // set(state => ({ count: state.count + 1 })); // ← 也支持
   },
   async addAsync() {
     const { add } = get();
-    // const outData = get(outModel); ← 获取其它 model
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
+    // const outData = get(outModel); // ← 获取其它 model
   },
 });
 
@@ -47,16 +49,16 @@ function Counter() {
   const { count, add, addAsync } = useModel(counter); // 试试 addAsync.loading!
 
   return (
-    <>
+    <div>
       <p>{count}</p>
       <button onClick={add}>+</button>
       <button onClick={addAsync}>+~ {addAsync.loading && '...'}</button>
-    </>
+    </div>
   );
 }
 ```
 
-**\* 自动 Loading** - 若 `someFn` 为异步函数，`someFn.loading` 可用作其 loading 状态。
+**\* 自动 Loading** - 若 `someFn` 为异步函数，`someFn.loading` 可用作其 loading state。
 
 ## 示例
 
@@ -77,11 +79,11 @@ import outModel from './outModel';
 
 const someModel = ({ get, set }) => ({
   someFn() {
-    const { a, b } = get();
-    const { x, y } = get(outModel);
+    const { a, b } = get(); // 获取自身 model
+    const { x, y } = get(outModel); // 获取其它 model
 
-    set({ a: a + b });
-    set((state) => ({ a: state.a + state.b }));
+    set({ a: a + b }); // 对象形式
+    set((state) => ({ a: state.a + state.b })); // 函数形式
   },
 });
 ```

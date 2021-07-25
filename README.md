@@ -20,7 +20,9 @@ English | [简体中文](./README.zh-CN.md)
 ## Install
 
 ```sh
-yarn add flooks # or → npm install flooks
+yarn add flooks
+
+# npm install flooks
 ```
 
 ## Usage
@@ -33,13 +35,13 @@ const counter = ({ get, set }) => ({
   add() {
     const { count } = get();
     set({ count: count + 1 });
-    // set(state => ({ count: state.count + 1 })); ← also support
+    // set(state => ({ count: state.count + 1 })); // ← also support
   },
   async addAsync() {
     const { add } = get();
-    // const outData = get(outModel); ← get other models
     await new Promise((resolve) => setTimeout(resolve, 1000));
     add();
+    // const outData = get(outModel); // ← get other models
   },
 });
 
@@ -47,11 +49,11 @@ function Counter() {
   const { count, add, addAsync } = useModel(counter); // try addAsync.loading!
 
   return (
-    <>
+    <div>
       <p>{count}</p>
       <button onClick={add}>+</button>
       <button onClick={addAsync}>+~ {addAsync.loading && '...'}</button>
-    </>
+    </div>
   );
 }
 ```
@@ -77,11 +79,11 @@ import outModel from './outModel';
 
 const someModel = ({ get, set }) => ({
   someFn() {
-    const { a, b } = get();
-    const { x, y } = get(outModel);
+    const { a, b } = get(); // get own model
+    const { x, y } = get(outModel); // get other models
 
-    set({ a: a + b });
-    set((state) => ({ a: state.a + state.b }));
+    set({ a: a + b }); // payload style
+    set((state) => ({ a: state.a + state.b })); // function style
   },
 });
 ```
