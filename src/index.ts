@@ -80,16 +80,26 @@ const useModel: UseModel = (model) => {
               if (prop === 'loading' && !('loading' in fn)) fn.loading = false;
               return fn[prop];
             },
-            apply: (fn, that, args) => {
-              const res = fn.apply(that, args);
-              if (!('loading' in fn) || !res || typeof res.then !== 'function') return res;
+            apply: (fn, that, list) => {
+              const res = fn.apply(that, list);
+              if (!('loading' in fn) || !res || typeof res.then !== 'function') {
+                actions[key] = fn;
+                return res;
+              }
 
-              fn.loading = true;
-              setState({});
-              return res.finally(() => {
-                fn.loading = false;
+              const setLoading = (loading: boolean) => {
+                actions[key].loading = loading;
                 setState({});
-              });
+              };
+
+              actions[key] = (...args: any[]) => {
+                const result = fn(...args);
+                setLoading(true);
+                return result.finally(() => setLoading(false));
+              };
+
+              setLoading(true);
+              return res.finally(() => setLoading(false));
             },
           });
 
