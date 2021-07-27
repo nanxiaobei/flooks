@@ -62,7 +62,7 @@ function Counter() {
 }
 ```
 
-**\* Intelligent loading state** - if `someFn` is async, `someFn.loading` is its loading state. If `someFn.loading` is not used, no extra re-renders.
+**\* Intelligent loading state** - if `someFn` is async, `someFn.loading` is its loading state. If `someFn.loading` is not used, no extra re-render.
 
 ## Demo
 
@@ -70,41 +70,42 @@ function Counter() {
 
 ## Gorgeous re-render optimization
 
-Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is really "react".
+Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is truly "react".
 
-The return of `useModel(someModel)` is a proxy, only when actually used, values will be injected into the component. Just automatic, no use, no state even exist!
+`useModel(someModel)` returns a proxy, only actually used data will be injected into the component. If not used, just not injected.
 
-### Only functions never trigger re-renders
-
-```js
-const { fn1, fn2 } = useModel(someModel);
-
-set({ a: 1 }); // no re-render
-```
-
-> If only destructured functions from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
-
-### Unused state never trigger re-renders
+### Only functions never trigger re-render
 
 ```js
-const { a } = useModel(someModel);
+const { fn1, fn2 } = useModel(someModel); // A component
 
-set({ b: 1 }); // no re-render
+const { b, setB } = useModel(someModel); // B component
+setB(); // A no re-render
 ```
 
-> If some state is not destructured from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
+If only functions used in A, others update won't trigger A re-render.
 
-### Unused loading never trigger re-renders
+### Unused state never trigger re-render
 
 ```js
-const { someFn } = useModel(someModel);
+const { a } = useModel(someModel); // A component
 
-// no someFn.loading, no re-render
+const { b, setB } = useModel(someModel); // B component
+setB(); // A no re-render
 ```
 
-> If `someFn.loading` is not used in code, `someFn()` not trigger extra re-renders.
->
-> With common loading solutions, even `someFn.loading` is not used, re-render triggered at least twice (turn `true` then `false`). However, with flooks, no invisible loading updates if `someFn.loading` is not used.
+If some state not used in A, others update won't trigger A re-render.
+
+### Unused loading never trigger re-render
+
+```js
+const { someFn } = useModel(someModel); // A component
+someFn(); // no someFn.loading, no extra re-render
+```
+
+If `someFn.loading` not used in A, `someFn()` won't trigger extra re-render.
+
+If `someFn` is async, with normal loading solutions, even `someFn.loading` is not used, re-render will trigger at least twice (turn `true` then `false`). However, with flooks, no invisible loading updates, if `someFn.loading` is not used.
 
 ## API
 

@@ -70,41 +70,42 @@ function Counter() {
 
 ## 惊人的 re-render 优化
 
-通过 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render，React 真正变为 "react"。
+借助 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render，React 真正变为 "react"。
 
-`useModel(someModel)` 的返回是一个 proxy，只有真正使用时，才会将值注入组件。完全自动，若未使用，state 甚至不存在！
+`useModel(someModel)` 返回一个 proxy，只有真正用到的数据，才会注入组件，若未用到，则不会注入。
 
 ### 只使用函数绝不触发 re-render
 
 ```js
-const { fn1, fn2 } = useModel(someModel);
+const { fn1, fn2 } = useModel(someModel); // A 组件
 
-set({ a: 1 }); // 无 re-render
+const { b, setB } = useModel(someModel); // B 组件
+setB(); // A 无 re-render
 ```
 
-> 若只从 `useModel(someModel)` 中解构出函数，在 `someModel` 中调用 `set()` 不触发 re-render。
+若 A 中只使用函数，则其它组件更新不触发 A re-render。
 
 ### 未使用的 state 绝不触发 re-render
 
 ```js
-const { a } = useModel(someModel);
+const { a } = useModel(someModel); // A 组件
 
-set({ b: 1 }); // 无 re-render
+const { b, setB } = useModel(someModel); // B 组件
+setB(); // A 无 re-render
 ```
 
-> 若未从 `useModel(someModel)` 中解构出某 state，在 `someModel` 中调用 `set()` 不触发 re-render。
+若 A 中未使用某些 state，则其它组件更新不触发 A re-render。
 
 ### 未使用的 loading 绝不触发 re-render
 
 ```js
-const { someFn } = useModel(someModel);
-
-// 无 someFn.loading，无 re-render
+const { someFn } = useModel(someModel); // A 组件
+someFn(); // 无 someFn.loading，无额外 re-render
 ```
 
-> 若代码中未使用 `someFn.loading`，调用 `someFn()` 不触发额外 re-render。
->
-> 普通的 loading 解决方案中，即使 `somefn.loading` 未使用，re-render 也会触发至少两次（先 `true` 然后 `false`）。但使用 flooks，如果 `somefn.loading` 未使用，绝没有隐形的 loading 更新。
+若 A 中未使用 `someFn.loading`，`someFn()` 不触发额外 re-render。
+
+若 `someFn` 为异步，普通 loading 方案中，即使 `somefn.loading` 未用到，re-render 也会触发至少两次（先 `true` 然后 `false`）。但使用 flooks，若 `somefn.loading` 未用到，则完全不会存在隐形 loading 更新。
 
 ## API
 
