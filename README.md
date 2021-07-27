@@ -1,4 +1,5 @@
-# flooks <sup><sup><sub>v4</sub></sup></sup>
+<div align="center">
+<h1>flooks <sup><sup><sub>v4</sub></sup></sup></h1>
 
 A state manager for React Hooks, with gorgeous auto optimized re-render.
 
@@ -9,15 +10,18 @@ A state manager for React Hooks, with gorgeous auto optimized re-render.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-English | [简体中文](./README.zh-CN.md)
+English · [简体中文](./README.zh-CN.md)
+
+</div>
 
 ---
 
 ## Features
 
-- Auto optimized re-render
-- Auto loading state
-- Connected modules
+- Gorgeous auto optimized re-render
+- Intelligent loading state
+- Interconnected modules
+- Extremely simple API
 
 ## Install
 
@@ -58,41 +62,49 @@ function Counter() {
 }
 ```
 
-**\* Auto loading state** - If `someFn` is async, `someFn.loading` can be used as its loading state.
+**\* Intelligent loading state** - if `someFn` is async, `someFn.loading` is its loading state. If `someFn.loading` is not used, no extra re-renders.
 
-## Demo
+## Gorgeous re-render optimization
 
-[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is really "react".
 
-## Auto optimization
+The return of `useModel(someModel)` is a proxy, only when actually used, values will be injected into the component. Just automatic, no use, no state even exist!
 
-Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand.
+### Only functions never trigger re-renders
 
-### Only functions will never trigger a re-render
+If only destructured functions from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
 
 ```js
 const { fn1, fn2 } = useModel(someModel);
+
+set({ a: 1 }); // no re-render
 ```
 
-Call `set(newState)` inside `someModel` will never trigger a re-render, if only destructured functions from `useModel(someModel)`.
+### Unused state never trigger re-renders
 
-### Unused state will never trigger a re-render
+If some state is not destructured from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
 
 ```js
 const { a } = useModel(someModel);
+
+set({ b: 1 }); // no re-render
 ```
 
-Call `set({ b: 1 })` inside `someModel` will never trigger a re-render, if `b` is not destructured from `useModel(someModel)`.
+### Unused loading never trigger re-renders
 
-### Unused loading will never trigger a re-render
+If `someFn.loading` is not used in code, `someFn()` not trigger extra re-renders.
+
+With common loading solutions, even `someFn.loading` is not used, re-render triggered at least twice (turn `true` then `false`). However, with flooks, no invisible loading updates if `someFn.loading` is not used.
 
 ```js
 const { someFn } = useModel(someModel);
 
-// someFn.loading
+// no someFn.loading, no re-render
 ```
 
-Usually if `someFn` is async, re-render will trigger at least twice (turn `true` then `false`) even `somefn.loading` is not used. However, with flooks, invisible loading update will never be triggered, unless `somefn.loading` was added to code.
+## Demo
+
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
 
 ## API
 
