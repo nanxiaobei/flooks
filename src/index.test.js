@@ -63,6 +63,7 @@ test('useModel', (done) => {
 
   click('#add');
   click('#addAsync');
+  click('#addAsync');
   click('#toggle');
 
   threw(() => useModel());
