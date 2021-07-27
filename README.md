@@ -1,6 +1,6 @@
-# 🍸 flooks <sup><sup><sub>v4</sub></sup></sup>
+# flooks <sup><sup><sub>v4</sub></sup></sup>
 
-A state manager for React Hooks, with gorgeous re-render auto optimization.
+A state manager for React Hooks, with gorgeous auto optimized re-render.
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -9,13 +9,15 @@ A state manager for React Hooks, with gorgeous re-render auto optimization.
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-Auto-loading ▨ Powerful modules ▨ Re-render optimization
-
----
-
 English | [简体中文](./README.zh-CN.md)
 
 ---
+
+## Features
+
+- Auto optimized re-render
+- Auto loading state
+- Connected modules
 
 ## Install
 
@@ -35,18 +37,16 @@ const counter = ({ get, set }) => ({
   add() {
     const { count } = get();
     set({ count: count + 1 });
-    // set(state => ({ count: state.count + 1 })); // ← also support
   },
   async addAsync() {
-    const { add } = get();
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { add } = get();
     add();
-    // const outData = get(outModel); // ← get other models
   },
 });
 
 function Counter() {
-  const { count, add, addAsync } = useModel(counter); // try addAsync.loading!
+  const { count, add, addAsync } = useModel(counter);
 
   return (
     <div>
@@ -58,11 +58,41 @@ function Counter() {
 }
 ```
 
-**\* Auto-loading** - If `someFn` is async, `someFn.loading` can be used as its loading state.
+**\* Auto loading state** - If `someFn` is async, `someFn.loading` can be used as its loading state.
 
 ## Demo
 
 [![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+
+## Auto optimization
+
+Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand.
+
+### Only functions will never trigger a re-render
+
+```js
+const { fn1, fn2 } = useModel(someModel);
+```
+
+Call `set(newState)` inside `someModel` will never trigger a re-render, if only destructured functions from `useModel(someModel)`.
+
+### Unused state will never trigger a re-render
+
+```js
+const { a } = useModel(someModel);
+```
+
+Call `set({ b: 1 })` inside `someModel` will never trigger a re-render, if `b` is not destructured from `useModel(someModel)`.
+
+### Unused loading will never trigger a re-render
+
+```js
+const { someFn } = useModel(someModel);
+
+// someFn.loading
+```
+
+Usually if `someFn` is async, re-render will trigger at least twice (turn `true` then `false`) even `somefn.loading` is not used. However, with flooks, invisible loading update will never be triggered, unless `somefn.loading` was added to code.
 
 ## API
 
@@ -88,11 +118,7 @@ const someModel = ({ get, set }) => ({
 });
 ```
 
-## Philosophy
-
-- The philosophy of flooks is decentralization, so recommend binding a page component and a model as one.
-- No need to add a file like `store.js` or `models.js`, because no need to distribute the store from top now.
-- A model has its own space, when call `get(outModel)` to get other models, all models can be connected.
+**\* Connected modules** - call `get(outModel)` inside `someModel` to get other models, all models can be connected.
 
 ## License
 

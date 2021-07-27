@@ -1,6 +1,6 @@
-# 🍸 flooks <sup><sup><sub>v4</sub></sup></sup>
+# flooks <sup><sup><sub>v4</sub></sup></sup>
 
-一个 React Hooks 状态管理器，支持惊人的 Re-render 自动优化。
+一个 React Hooks 状态管理器，支持惊人的自动 re-render 优化。
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -9,13 +9,15 @@
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/src/index.ts)
 [![GitHub](https://img.shields.io/github/license/nanxiaobei/flooks?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/master/LICENSE)
 
-自动 Loading ▨ 强大的模块化 ▨ Re-render 优化
-
----
-
 [English](./README.md) | 简体中文
 
 ---
+
+## 特性
+
+- 自动 re-render 优化
+- 自动 loading state
+- 可连通的模块化
 
 ## 安装
 
@@ -35,18 +37,16 @@ const counter = ({ get, set }) => ({
   add() {
     const { count } = get();
     set({ count: count + 1 });
-    // set(state => ({ count: state.count + 1 })); // ← 也支持
   },
   async addAsync() {
-    const { add } = get();
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { add } = get();
     add();
-    // const outData = get(outModel); // ← 获取其它 model
   },
 });
 
 function Counter() {
-  const { count, add, addAsync } = useModel(counter); // 试试 addAsync.loading!
+  const { count, add, addAsync } = useModel(counter);
 
   return (
     <div>
@@ -58,11 +58,41 @@ function Counter() {
 }
 ```
 
-**\* 自动 Loading** - 若 `someFn` 为异步函数，`someFn.loading` 可用作其 loading state。
+**\* 自动 loading state** - 若 `someFn` 为异步函数，`someFn.loading` 可用作其 loading state。
 
 ## 示例
 
 [![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+
+## 自动优化
+
+通过 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render。
+
+### 只有函数永远不会触发 re-render
+
+```js
+const { fn1, fn2 } = useModel(someModel);
+```
+
+在 `someModel` 中调用 `set(newState)` 永远不会触发 re-render，如果只从 `useModel(someModel)` 中解构出了函数。
+
+### 未使用的 state 永远不会触发 re-render
+
+```js
+const { a } = useModel(someModel);
+```
+
+在 `someModel` 中调用 `set({ b: 1 })` 永远不会触发 re-render，如果未从 `useModel(someModel)` 中解构出 `b`。
+
+### 未使用的 loading 不会触发 re-render
+
+```js
+const { someFn } = useModel(someModel);
+
+// someFn.loading
+```
+
+通常，如果 `someFn` 是异步函数，即使不使用 `somefn.loading`，re-render 也会触发至少两次（先变为 `true` 然后变成 `false`）。但若使用 flooks，隐形的 loading 更新将永远不会 re-render，除非代码中使用了 `somefn.loading`。
 
 ## API
 
@@ -87,12 +117,6 @@ const someModel = ({ get, set }) => ({
   },
 });
 ```
-
-## 理念
-
-- flooks 的理念是去中心化，因此建议将页面组件与 model 绑定为一个整体。
-- 不需要添加类似 `store.js`、`models.js` 这样的文件，因为现在已不需要从顶层下发 store。
-- model 有自己的空间，同时通过 `get(outModel)` 获取其它 model，所有 model 可实现互通。
 
 ## 协议
 
