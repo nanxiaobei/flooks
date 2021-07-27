@@ -64,6 +64,10 @@ function Counter() {
 
 **\* Intelligent loading state** - if `someFn` is async, `someFn.loading` is its loading state. If `someFn.loading` is not used, no extra re-renders.
 
+## Demo
+
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+
 ## Gorgeous re-render optimization
 
 Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is really "react".
@@ -72,17 +76,15 @@ The return of `useModel(someModel)` is a proxy, only when actually used, values 
 
 ### Only functions never trigger re-renders
 
-If only destructured functions from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
-
 ```js
 const { fn1, fn2 } = useModel(someModel);
 
 set({ a: 1 }); // no re-render
 ```
 
-### Unused state never trigger re-renders
+> If only destructured functions from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
 
-If some state is not destructured from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
+### Unused state never trigger re-renders
 
 ```js
 const { a } = useModel(someModel);
@@ -90,11 +92,9 @@ const { a } = useModel(someModel);
 set({ b: 1 }); // no re-render
 ```
 
+> If some state is not destructured from `useModel(someModel)`, `set()` in `someModel` not trigger re-renders.
+
 ### Unused loading never trigger re-renders
-
-If `someFn.loading` is not used in code, `someFn()` not trigger extra re-renders.
-
-With common loading solutions, even `someFn.loading` is not used, re-render triggered at least twice (turn `true` then `false`). However, with flooks, no invisible loading updates if `someFn.loading` is not used.
 
 ```js
 const { someFn } = useModel(someModel);
@@ -102,9 +102,9 @@ const { someFn } = useModel(someModel);
 // no someFn.loading, no re-render
 ```
 
-## Demo
-
-[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+> If `someFn.loading` is not used in code, `someFn()` not trigger extra re-renders.
+>
+> With common loading solutions, even `someFn.loading` is not used, re-render triggered at least twice (turn `true` then `false`). However, with flooks, no invisible loading updates if `someFn.loading` is not used.
 
 ## API
 

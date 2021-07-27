@@ -64,6 +64,10 @@ function Counter() {
 
 **\* 聪明的 loading state** - 若 `someFn` 为异步函数，`someFn.loading` 为其 loading state。若 `someFn.loading` 未使用，绝不触发额外 re-render。
 
+## 示例
+
+[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+
 ## 惊人的 re-render 优化
 
 通过 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render，React 真正变为 "react"。
@@ -72,17 +76,15 @@ function Counter() {
 
 ### 只使用函数绝不触发 re-render
 
-若只从 `useModel(someModel)` 中解构出函数，在 `someModel` 中调用 `set()` 不触发 re-render。
-
 ```js
 const { fn1, fn2 } = useModel(someModel);
 
 set({ a: 1 }); // 无 re-render
 ```
 
-### 未使用的 state 绝不触发 re-render
+> 若只从 `useModel(someModel)` 中解构出函数，在 `someModel` 中调用 `set()` 不触发 re-render。
 
-若未从 `useModel(someModel)` 中解构出某 state，在 `someModel` 中调用 `set()` 不触发 re-render。
+### 未使用的 state 绝不触发 re-render
 
 ```js
 const { a } = useModel(someModel);
@@ -90,11 +92,9 @@ const { a } = useModel(someModel);
 set({ b: 1 }); // 无 re-render
 ```
 
+> 若未从 `useModel(someModel)` 中解构出某 state，在 `someModel` 中调用 `set()` 不触发 re-render。
+
 ### 未使用的 loading 绝不触发 re-render
-
-若代码中未使用 `someFn.loading`，调用 `someFn()` 不触发额外 re-render。
-
-普通 loading 解决方案中，即使 `somefn.loading` 未使用，re-render 也会触发至少两次（先 `true` 然后 `false`）。但借助 flooks，如果 `somefn.loading` 未使用，绝没有隐形的 loading 更新。
 
 ```js
 const { someFn } = useModel(someModel);
@@ -102,9 +102,9 @@ const { someFn } = useModel(someModel);
 // 无 someFn.loading，无 re-render
 ```
 
-## 示例
-
-[![Edit flooks](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/flooks-gqye5?fontsize=14&hidenavigation=1&theme=dark)
+> 若代码中未使用 `someFn.loading`，调用 `someFn()` 不触发额外 re-render。
+>
+> 普通的 loading 解决方案中，即使 `somefn.loading` 未使用，re-render 也会触发至少两次（先 `true` 然后 `false`）。但使用 flooks，如果 `somefn.loading` 未使用，绝没有隐形的 loading 更新。
 
 ## API
 
