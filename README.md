@@ -131,7 +131,7 @@ const someModel = ({ get, set }) => ({
 });
 ```
 
-**\* Connected modules** - call `get(outModel)` inside `someModel` to get other models, all models can be connected.
+**\* Interconnected modules** - call `get(outModel)` to get other models, all models can be connected.
 
 ## License
 
