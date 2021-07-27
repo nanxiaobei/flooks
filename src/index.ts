@@ -10,6 +10,7 @@ type SetSnap = (payload: Snap | Reducer) => void;
 export type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
 type UseModel = (model: Model) => Snap;
 
+const TARGET = {};
 const ERR_MODEL = 'model should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_OUT_MODEL = 'model passed to get() is not initialized';
@@ -51,48 +52,39 @@ const useModel: UseModel = (model) => {
 
   // local model
   const resData = useRef<Snap>({});
+  const cache = useRef<Snap>({});
 
   const hasState = useRef(false);
   const hasUpdate = useRef(false);
   const [, setState] = useState({});
 
   useMemo(() => {
-    const state: Snap = {};
-    const actions: Snap = {};
+    resData.current = new Proxy(TARGET, {
+      get: (_, key: string) => {
+        const val = modelData[key];
 
-    resData.current = new Proxy(
-      {},
-      {
-        get: (_, key: string) => {
-          if (key in actions) return actions[key];
-
-          const val = modelData[key];
-          if (key in state) return val;
-
-          if (typeof val !== 'function') {
-            hasState.current = true;
-            state[key] = val;
-            return val;
-          }
-
-          actions[key] = new Proxy(val, {
+        if (typeof val !== 'function') {
+          hasState.current = true;
+          cache.current[key] = val;
+        } else {
+          cache.current[key] = new Proxy(val, {
             get: (fn, prop) => {
               if (prop === 'loading' && !('loading' in fn)) fn.loading = false;
               return fn[prop];
             },
-            apply: (fn, that, list) => {
-              const res = fn.apply(that, list);
+            apply: (fn, _this, list) => {
+              const res = fn(...list);
               if (!('loading' in fn) || !res || typeof res.then !== 'function') {
-                actions[key] = fn;
+                cache.current[key] = fn;
                 return res;
               }
 
               const setLoading = (loading: boolean) => {
-                actions[key].loading = loading;
+                cache.current[key].loading = loading;
                 setState({});
               };
 
-              actions[key] = (...args: any[]) => {
+              cache.current[key] = (...args: any[]) => {
                 const result = fn(...args);
                 setLoading(true);
                 return result.finally(() => setLoading(false));
@@ -102,32 +94,41 @@ const useModel: UseModel = (model) => {
               return res.finally(() => setLoading(false));
             },
           });
+        }
 
-          return actions[key];
-        },
-        set: (_, key: string) => {
-          if (!hasUpdate.current && key in state) hasUpdate.current = true;
-          return true;
-        },
-      }
-    );
+        return cache.current[key];
+      },
+    });
   }, [modelData]);
 
   useEffect(() => {
-    if (!hasState.current) return;
+    if (hasState.current) {
+      resData.current = new Proxy(TARGET, {
+        get: (_, key: string) => cache.current[key],
+        set: (_, key: string, val) => {
+          if (key in cache.current) {
+            hasUpdate.current = true;
+            cache.current[key] = val;
+          }
+          return true;
+        },
+      });
 
-    const updater: Updater = (payload) => {
-      Object.assign(resData.current, payload);
-      if (hasUpdate.current) {
-        hasUpdate.current = false;
-        setState({});
-      }
-    };
+      const updater: Updater = (payload) => {
+        Object.assign(resData.current, payload);
+        if (hasUpdate.current) {
+          hasUpdate.current = false;
+          setState({});
+        }
+      };
 
-    modelSubs.push(updater);
-    return () => {
-      modelSubs.splice(modelSubs.indexOf(updater), 1);
-    };
+      modelSubs.push(updater);
+      return () => {
+        modelSubs.splice(modelSubs.indexOf(updater), 1);
+      };
+    }
+
+    resData.current = cache.current;
   }, [modelSubs]);
 
   return resData.current;
