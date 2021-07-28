@@ -16,6 +16,8 @@
 
 ---
 
+[flooks v4 介绍](https://github.com/nanxiaobei/flooks/discussions/29)
+
 ## 特性
 
 - 惊人的 re-render 自动优化

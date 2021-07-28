@@ -16,6 +16,8 @@ English · [简体中文](./README.zh-CN.md)
 
 ---
 
+[Introducing flooks v4](https://github.com/nanxiaobei/flooks/discussions/28)
+
 ## Features
 
 - Gorgeous auto optimized re-render
