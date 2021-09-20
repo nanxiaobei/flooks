@@ -51,8 +51,10 @@ const counter = ({ get, set }) => ({
   },
 });
 
+const useCounter = () => useModel(counter);
+
 function Counter() {
-  const { count, add, addAsync } = useModel(counter);
+  const { count, add, addAsync } = useCounter();
 
   return (
     <div>
@@ -74,14 +76,14 @@ function Counter() {
 
 借助 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render，React 真正变为 "react"。
 
-`useModel(someModel)` 返回一个 proxy，只有真正用到的数据，才会注入组件，若未用到，则不会注入。
+只有真正在组件中用到的某个数据，才会注入组件，若未用到，则不会注入。
 
 ### 只使用函数绝不触发 re-render
 
 ```js
-const { fn1, fn2 } = useModel(someModel); // A 组件
+const { fn } = useDemoModel(); // A 组件
 
-const { b, setB } = useModel(someModel); // B 组件
+const { b, setB } = useDemoModel(); // B 组件
 setB(); // A 无 re-render
 ```
 
@@ -90,9 +92,9 @@ setB(); // A 无 re-render
 ### 未使用的 state 绝不触发 re-render
 
 ```js
-const { a } = useModel(someModel); // A 组件
+const { a } = useDemoModel(); // A 组件
 
-const { b, setB } = useModel(someModel); // B 组件
+const { b, setB } = useDemoModel(); // B 组件
 setB(); // A 无 re-render
 ```
 
@@ -101,7 +103,7 @@ setB(); // A 无 re-render
 ### 未使用的 loading 绝不触发 re-render
 
 ```js
-const { someFn } = useModel(someModel); // A 组件
+const { someFn } = useDemoModel(); // A 组件
 someFn(); // 无 someFn.loading，无额外 re-render
 ```
 
@@ -116,27 +118,36 @@ someFn(); // 无 someFn.loading，无额外 re-render
 ```js
 import useModel from 'flooks';
 
-const { a, b } = useModel(someModel);
+const useSomeModel = () => useModel(someModel);
 ```
 
 ### `get()` & `set()`
 
 ```js
-import outModel from './outModel';
+import useModel from 'flooks';
+import { anotherModel } from './useAnotherModel';
 
 const someModel = ({ get, set }) => ({
   someFn() {
     const { a, b } = get(); // 获取自身 model
-    const { x, y } = get(outModel); // 获取其它 model
+    const { x, y } = get(anotherModel); // 获取其它 model
 
     set({ a: a + b }); // 对象形式
     set((state) => ({ a: state.a + state.b })); // 函数形式
   },
 });
+
+export default () => useModel(someModel);
 ```
 
-**\* 彼此互通的模块化** - 在 `someModel` 中调用 `get(outModel)` 获取其他 model，所有 model 均可互通。
+**\* 彼此互通的模块化** - 在 `someModel` 中调用 `get(anotherModel)` 获取其他 model，所有 model 均可互通。
 
 ## 协议
 
-[MIT License](https://github.com/nanxiaobei/flooks/blob/master/LICENSE) (c) [nanxiaobei](https://mrlee.me/)
+[MIT License](https://github.com/nanxiaobei/flooks/blob/master/LICENSE) (c) [nanxiaobei](https://lee.so/)
+
+## FUTAKE
+
+试试 [**FUTAKE**](https://sotake.com/f) 小程序，你的灵感相册。🌈
+
+![FUTAKE](https://s3.jpg.cm/2021/09/21/IFG3wi.png)

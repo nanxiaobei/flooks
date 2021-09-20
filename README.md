@@ -51,8 +51,10 @@ const counter = ({ get, set }) => ({
   },
 });
 
+const useCounter = () => useModel(counter);
+
 function Counter() {
-  const { count, add, addAsync } = useModel(counter);
+  const { count, add, addAsync } = useCounter();
 
   return (
     <div>
@@ -74,14 +76,14 @@ function Counter() {
 
 Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is truly "react".
 
-`useModel(someModel)` returns a proxy, only actually used data will be injected into the component. If not used, just not injected.
+Only actually used data will be injected into the component. If not, just not injected.
 
 ### Only functions never trigger re-render
 
 ```js
-const { fn1, fn2 } = useModel(someModel); // A component
+const { fn } = useDemoModel(); // A component
 
-const { b, setB } = useModel(someModel); // B component
+const { b, setB } = useDemoModel(); // B component
 setB(); // A no re-render
 ```
 
@@ -90,9 +92,9 @@ If only functions used in A, others update won't trigger A re-render.
 ### Unused state never trigger re-render
 
 ```js
-const { a } = useModel(someModel); // A component
+const { a } = useDemoModel(); // A component
 
-const { b, setB } = useModel(someModel); // B component
+const { b, setB } = useDemoModel(); // B component
 setB(); // A no re-render
 ```
 
@@ -101,7 +103,7 @@ If some state not used in A, others update won't trigger A re-render.
 ### Unused loading never trigger re-render
 
 ```js
-const { someFn } = useModel(someModel); // A component
+const { someFn } = useDemoModel(); // A component
 someFn(); // no someFn.loading, no extra re-render
 ```
 
@@ -114,33 +116,38 @@ If `someFn` is async, with normal loading solutions, even `someFn.loading` is no
 ### `useModel()`
 
 ```js
-const { a, b } = useModel(someModel);
+import useModel from 'flooks';
+
+const useSomeModel = () => useModel(someModel);
 ```
 
 ### `get()` & `set()`
 
 ```js
-import outModel from './outModel';
+import useModel from 'flooks';
+import { anotherModel } from './useAnotherModel';
 
 const someModel = ({ get, set }) => ({
   someFn() {
     const { a, b } = get(); // get own model
-    const { x, y } = get(outModel); // get other models
+    const { x, y } = get(anotherModel); // get other models
 
     set({ a: a + b }); // payload style
     set((state) => ({ a: state.a + state.b })); // function style
   },
 });
+
+export default () => useModel(someModel);
 ```
 
-**\* Interconnected modules** - call `get(outModel)` to get other models, all models can be connected.
+**\* Interconnected modules** - call `get(anotherModel)` in `someModel` to get other models, all models can be connected.
 
 ## License
 
-[MIT License](https://github.com/nanxiaobei/flooks/blob/master/LICENSE) (c) [nanxiaobei](https://mrlee.me/)
+[MIT License](https://github.com/nanxiaobei/flooks/blob/master/LICENSE) (c) [nanxiaobei](https://lee.so/)
 
-## Pitiless Ads
+## FUTAKE
 
-If you use WeChat, please try "**FUTAKE**". It's a WeChat mini app for your inspiration moments. 🌈
+Try [**FUTAKE**](https://sotake.com/f) in WeChat. A mini app for your inspiration moments. 🌈
 
-![FUTAKE](https://s3.jpg.cm/2021/04/22/TDQuS.png)
+![FUTAKE](https://s3.jpg.cm/2021/09/21/IFG3wi.png)
