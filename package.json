@@ -1,7 +1,7 @@
 {
   "name": "flooks",
   "version": "4.0.2",
-  "description": "A state manager for React Hooks",
+  "description": "Auto optimized React Hooks state manager, just tiny & simple",
   "keywords": [
     "react",
     "hooks",
