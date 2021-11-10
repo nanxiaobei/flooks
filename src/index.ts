@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type Snap = { [key: string]: any };
 type Updater = (payload: Snap) => void;
@@ -11,7 +11,7 @@ export type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
 type UseModel = (model: Model) => Snap;
 
 type Noop = () => void;
-type Handler = { get: (_: any, k: string) => any; set: (_: any, k: string, v: any) => true };
+type Handler = { get: (t: any, k: string) => any; set: (t: any, k: string, v: any) => true };
 
 const ERR_MODEL = 'model should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
@@ -26,124 +26,124 @@ const useModel: UseModel = (model) => {
   const __DEV__ = process.env.NODE_ENV !== 'production';
   if (__DEV__ && typeof model !== 'function') throw new Error(ERR_MODEL);
 
-  // global model
-  let [globalModel, globalSubs]: [Snap, Updater[]] = map.get(model) || [];
-
-  if (!globalModel) {
-    const get: GetSnap = (outModel) => {
-      if (typeof outModel === 'undefined') return globalModel;
-
-      const outData = map.get(outModel)?.[0];
-      if (__DEV__ && !outData) throw new Error(ERR_OUT_MODEL);
-      return outData;
-    };
-
-    const set: SetSnap = (payload) => {
-      if (typeof payload === 'function') {
-        payload = payload(globalModel);
-      } else if (__DEV__ && notObj(payload)) {
-        throw new Error(ERR_PAYLOAD);
-      }
-
-      Object.assign(globalModel, payload);
-      globalSubs.forEach((updater) => updater(payload));
-    };
-
-    globalModel = model({ get, set });
-    globalSubs = [];
-    map.set(model, [globalModel, globalSubs]);
-  }
-
-  // local model
   const localModel = useRef<Snap>({});
+  const localTarget = useRef<Snap>({});
   const localHandler = useRef<Handler>(emptyObj);
-  const localData = useRef<Snap>({});
 
   const hasState = useRef(false);
-  const [, setState] = useState({});
   const hasUpdate = useRef(false);
-  const offUpdater = useRef<Noop>(noop);
+  const removeUpdater = useRef<Noop>(noop);
 
-  useMemo(() => {
+  const [, setState] = useState(() => {
+    let [globalModel, globalSubs]: [Snap, Updater[]] = map.get(model) || [];
+
+    // global model
+    if (!globalModel) {
+      const get: GetSnap = (outModel) => {
+        if (typeof outModel === 'undefined') return globalModel;
+
+        const outData = map.get(outModel)?.[0];
+        if (__DEV__ && !outData) throw new Error(ERR_OUT_MODEL);
+        return outData;
+      };
+
+      const set: SetSnap = (payload) => {
+        if (typeof payload === 'function') {
+          payload = payload(globalModel);
+        } else if (__DEV__ && notObj(payload)) {
+          throw new Error(ERR_PAYLOAD);
+        }
+
+        Object.assign(globalModel, payload);
+        globalSubs.forEach((updater) => updater(payload));
+      };
+
+      globalModel = model({ get, set });
+      globalSubs = [];
+
+      map.set(model, [globalModel, globalSubs]);
+    }
+
+    // local model
     localHandler.current = {
-      get: (_, key) => {
+      get: (target, key) => {
         const val = globalModel[key];
 
         if (typeof val !== 'function') {
           hasState.current = true;
-          localData.current[key] = val;
-          return localData.current[key];
+          target[key] = val;
+          return target[key];
         }
 
-        localData.current[key] = new Proxy(val, {
-          get: (fn, prop) => {
-            if (prop === 'loading' && !('loading' in fn)) fn.loading = false;
-            return fn[prop];
+        target[key] = new Proxy(val, {
+          get: (fn, fnKey) => {
+            if (fnKey === 'loading' && !('loading' in fn)) fn.loading = false;
+            return fn[fnKey];
           },
 
-          apply: (fn, __, list) => {
-            const fnRes = fn(...list);
-            if (!('loading' in fn) || !fnRes || typeof fnRes.then !== 'function') {
-              localData.current[key] = fn;
-              return fnRes;
+          apply: (fn, _this, args) => {
+            const res = fn(...args);
+            if (!('loading' in fn) || !res || typeof res.then !== 'function') {
+              target[key] = fn;
+              return res;
             }
 
             const setLoading = (loading: boolean) => {
-              localData.current[key].loading = loading;
-              setState({});
+              target[key].loading = loading;
+              setState((s) => !s);
             };
 
-            localData.current[key] = (...args: any[]) => {
-              const result = fn(...args);
+            target[key] = (...newArgs: any[]) => {
+              const newRes = fn(...newArgs);
               setLoading(true);
-              return result.finally(() => setLoading(false));
+              return newRes.finally(() => setLoading(false));
             };
 
             setLoading(true);
-            return fnRes.finally(() => setLoading(false));
+            return res.finally(() => setLoading(false));
           },
         });
 
-        return localData.current[key];
+        return target[key];
       },
 
-      set: (_, key, val) => {
-        if (key in localData.current) {
+      set: (target, key, val) => {
+        if (key in target) {
+          target[key] = val;
           hasUpdate.current = true;
-          localData.current[key] = val;
         }
         return true;
       },
     };
 
-    localModel.current = new Proxy({}, localHandler.current);
-  }, [globalModel]);
+    localModel.current = new Proxy(localTarget.current, localHandler.current);
 
-  useMemo(() => {
     const localUpdater: Updater = (payload) => {
       Object.assign(localModel.current, payload);
 
       if (hasUpdate.current) {
-        setState({});
+        setState((s) => !s);
         hasUpdate.current = false;
       }
     };
 
     globalSubs.push(localUpdater);
 
-    offUpdater.current = () => {
+    removeUpdater.current = () => {
       globalSubs.splice(globalSubs.indexOf(localUpdater), 1);
     };
-  }, [globalSubs]);
+
+    return false;
+  });
 
   useEffect(() => {
     if (hasState.current) {
-      localHandler.current.get = (_, key) => localData.current[key];
-      return offUpdater.current;
+      localHandler.current.get = (target, key) => target[key];
+      return removeUpdater.current;
     }
 
-    localModel.current = localData.current;
-    offUpdater.current();
+    localModel.current = localTarget.current;
+    removeUpdater.current();
   }, []);
 
   return localModel.current;
