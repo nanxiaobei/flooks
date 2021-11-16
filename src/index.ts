@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 type Snap = { [key: string]: any };
 type Updater = (payload: Snap) => void;
@@ -10,31 +10,27 @@ type SetSnap = (payload: Snap | Reducer) => void;
 export type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
 type UseModel = (model: Model) => Snap;
 
-type Noop = () => void;
+type Noop = () => (() => void) | void;
 type Handler = { get: (t: any, k: string) => any; set: (t: any, k: string, v: any) => true };
 
+const __DEV__ = process.env.NODE_ENV !== 'production';
 const ERR_MODEL = 'model should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_OUT_MODEL = 'model passed to get() is not initialized';
-const noop = () => null;
-const emptyObj: any = {};
+const emptyObj = {};
+const noop = () => () => null;
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
 const map: WeakMap<Model, any> = new WeakMap();
 
 const useModel: UseModel = (model) => {
-  const __DEV__ = process.env.NODE_ENV !== 'production';
   if (__DEV__ && typeof model !== 'function') throw new Error(ERR_MODEL);
 
-  const localModel = useRef<Snap>({});
-  const localTarget = useRef<Snap>({});
-  const localHandler = useRef<Handler>(emptyObj);
+  const localModel = useRef(emptyObj);
+  const [, setState] = useState(false);
+  const onEffect = useRef<Noop>(noop);
 
-  const hasState = useRef(false);
-  const hasUpdate = useRef(false);
-  const removeUpdater = useRef<Noop>(noop);
-
-  const [, setState] = useState(() => {
+  useMemo(() => {
     let [globalModel, globalSubs]: [Snap, Updater[]] = map.get(model) || [];
 
     // global model
@@ -65,12 +61,16 @@ const useModel: UseModel = (model) => {
     }
 
     // local model
-    localHandler.current = {
+    let hasState = false;
+    let hasUpdate = false;
+
+    const localTarget = {};
+    const localHandler: Handler = {
       get: (target, key) => {
         const val = globalModel[key];
 
         if (typeof val !== 'function') {
-          hasState.current = true;
+          hasState = true;
           target[key] = val;
           return target[key];
         }
@@ -110,41 +110,37 @@ const useModel: UseModel = (model) => {
       set: (target, key, val) => {
         if (key in target) {
           target[key] = val;
-          hasUpdate.current = true;
+          hasUpdate = true;
         }
         return true;
       },
     };
 
-    localModel.current = new Proxy(localTarget.current, localHandler.current);
+    localModel.current = new Proxy(localTarget, localHandler);
 
     const localUpdater: Updater = (payload) => {
       Object.assign(localModel.current, payload);
 
-      if (hasUpdate.current) {
+      if (hasUpdate) {
         setState((s) => !s);
-        hasUpdate.current = false;
+        hasUpdate = false;
       }
     };
 
     globalSubs.push(localUpdater);
 
-    removeUpdater.current = () => {
+    onEffect.current = () => {
+      if (hasState) {
+        localHandler.get = (target, key) => target[key];
+        return () => globalSubs.splice(globalSubs.indexOf(localUpdater), 1);
+      }
+
       globalSubs.splice(globalSubs.indexOf(localUpdater), 1);
+      localModel.current = localTarget;
     };
+  }, [model]);
 
-    return false;
-  });
-
-  useEffect(() => {
-    if (hasState.current) {
-      localHandler.current.get = (target, key) => target[key];
-      return removeUpdater.current;
-    }
-
-    localModel.current = localTarget.current;
-    removeUpdater.current();
-  }, []);
+  useEffect(() => onEffect.current(), []);
 
   return localModel.current;
 };
