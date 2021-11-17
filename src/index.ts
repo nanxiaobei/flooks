@@ -13,14 +13,15 @@ type Create = (model: Model) => UseModel;
 type Noop = () => void;
 type Handler = { get: (t: any, k: string) => any; set: (t: any, k: string, v: any) => true };
 
-const __DEV__ = process.env.NODE_ENV !== 'production';
 const ERR_MODEL = 'model should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_OUT_MODEL = 'useOutModel passed to get() is not initialized';
-const MIGRATE_WARNING =
-  'flooks v5 is installed, useModel is deprecated, migrate guide: https://github.com/nanxiaobei/flooks';
+const MIGRATE_URL = 'https://github.com/nanxiaobei/flooks#from-v4-to-v5';
+const MIGRATE_ERR = `flooks v5 installed, sorry for breaking changes. Simple migrate guide: ${MIGRATE_URL}`;
+
 const emptyObj = {};
 const noop = () => undefined;
+const __DEV__ = process.env.NODE_ENV !== 'production';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
 const map: WeakMap<Model, any> = new WeakMap();
@@ -30,9 +31,9 @@ const create: Create = (model) => {
 
   try {
     useState(0); // eslint-disable-line react-hooks/rules-of-hooks
-    throw new Error(MIGRATE_WARNING);
+    throw new Error(MIGRATE_ERR);
   } catch (err: any) {
-    if (err.message === MIGRATE_WARNING) throw err;
+    if (err.message === MIGRATE_ERR) throw err;
   }
 
   const modelSubs: Updater[] = [];
