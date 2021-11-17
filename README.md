@@ -140,25 +140,25 @@ const useSomeModel = create(({ get, set }) => ({
 ## From v4 to v5
 
 ```diff
--import useDemo from 'flooks';
-+import create from 'flooks';
+- import useModel from 'flooks';
++ import create from 'flooks';
 
--import { someModel } from './useSomeModel';
-+import useSomeModel from './useSomeModel';
+- import { someModel } from './useSomeModel';
++ import useSomeModel from './useSomeModel';
 
--const counter = ({ get, set }) => ({
-+const useCounter = create(({ get, set }) => ({
-  count: 0,
-  add() {
--    const { count } = get(homeModel);
-+    const { count } = get(useSomeModel);
-  },
--});
-+}));
+- const counter = ({ get, set }) => ({
++ const useCounter = create(({ get, set }) => ({
+    count: 0,
+    add() {
+-     const { count } = get(someModel);
++     const { count } = get(useSomeModel);
+    },
+- });
++ }));
 
--const useCounter = () => useDemo(counter);
+- const useCounter = () => useModel(counter);
 
-export default useCounter;
+  export default useCounter;
 ```
 
 ## License
