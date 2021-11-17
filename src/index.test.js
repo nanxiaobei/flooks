@@ -2,7 +2,7 @@ import 'jsdom-global/register';
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
-import useModel from './index.ts';
+import create from './index.ts';
 
 configure({ adapter: new Adapter() });
 
@@ -10,8 +10,11 @@ console.error = jest.fn((msg) => {
   if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
 });
 
-test('useModel', (done) => {
-  const counter = ({ get, set }) => ({
+const error = (fn) => expect(fn).toThrow();
+const click = (wrapper, el) => wrapper.find(el).simulate('click');
+
+test('create', (done) => {
+  const useCounter = create(({ get, set }) => ({
     count: 0,
     open: false,
     add() {
@@ -26,23 +29,23 @@ test('useModel', (done) => {
     toggle() {
       set((state) => ({ open: !state.open }));
     },
-  });
+  }));
 
-  const error = ({ get, set }) => ({
+  const useErrModel = create(({ get, set }) => ({
     errPayload() {
       set([]);
     },
     errOutModel() {
-      const { add } = get(counter);
+      const { add } = get(useCounter);
       add();
       const { notExist } = get(1);
     },
-  });
+  }));
 
   const Counter = () => {
-    const { count, add, addAsync } = useModel(counter);
-    const { open, toggle } = useModel(counter);
-    const { errPayload, errOutModel } = useModel(error);
+    const { count, add, addAsync } = useCounter();
+    const { open, toggle } = useCounter();
+    const { errPayload, errOutModel } = useErrModel();
 
     return (
       <>
@@ -58,17 +61,15 @@ test('useModel', (done) => {
   };
 
   const wrapper = mount(<Counter />);
-  const click = (el) => wrapper.find(el).simulate('click');
-  const threw = (fn) => expect(fn).toThrow();
 
-  click('#add');
-  click('#addAsync');
-  click('#addAsync');
-  click('#toggle');
+  click(wrapper, '#add');
+  click(wrapper, '#addAsync');
+  click(wrapper, '#addAsync');
+  click(wrapper, '#toggle');
 
-  threw(() => useModel());
-  threw(() => click('#errPayload'));
-  threw(() => click('#errOutModel'));
+  error(() => create());
+  error(() => click(wrapper, '#errPayload'));
+  error(() => click(wrapper, '#errOutModel'));
 
   setTimeout(() => {
     wrapper.unmount();
