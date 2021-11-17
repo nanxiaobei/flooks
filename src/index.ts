@@ -6,9 +6,7 @@ type Reducer = (payload: Snap) => Snap;
 
 type GetSnap = (model?: Model) => Snap;
 type SetSnap = (payload: Snap | Reducer) => void;
-
-export type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
-type UseModel = (model: Model) => Snap;
+type Model = ({ get, set }: { get: GetSnap; set: SetSnap }) => Snap;
 
 type Noop = () => (() => void) | void;
 type Handler = { get: (t: any, k: string) => any; set: (t: any, k: string, v: any) => true };
@@ -18,12 +16,12 @@ const ERR_MODEL = 'model should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_OUT_MODEL = 'model passed to get() is not initialized';
 const emptyObj = {};
-const noop = () => () => null;
+const noop = () => () => undefined;
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
 const map: WeakMap<Model, any> = new WeakMap();
 
-const useModel: UseModel = (model) => {
+const useModel = (model: Model) => {
   if (__DEV__ && typeof model !== 'function') throw new Error(ERR_MODEL);
 
   const localModel = useRef(emptyObj);
