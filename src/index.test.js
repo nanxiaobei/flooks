@@ -2,16 +2,15 @@ import 'jsdom-global/register';
 import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
+import { renderHook } from '@testing-library/react-hooks';
 import create from './index.ts';
 
 configure({ adapter: new Adapter() });
 
 console.error = jest.fn((msg) => {
-  if (!msg.includes('test was not wrapped in act(...)')) throw new Error(msg);
+  if (msg.includes('test was not wrapped in act(...)')) return;
+  throw new Error(msg);
 });
-
-const error = (fn) => expect(fn).toThrow();
-const click = (wrapper, el) => wrapper.find(el).simulate('click');
 
 test('create', (done) => {
   const useCounter = create(({ get, set }) => ({
@@ -22,7 +21,9 @@ test('create', (done) => {
       set({ count: count + 1 });
     },
     async addAsync() {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
       const { add } = get();
       add();
     },
@@ -61,15 +62,19 @@ test('create', (done) => {
   };
 
   const wrapper = mount(<Counter />);
+  const error = (fn) => expect(fn).toThrow();
+  const click = (el) => wrapper.find(el).simulate('click');
 
-  click(wrapper, '#add');
-  click(wrapper, '#addAsync');
-  click(wrapper, '#addAsync');
-  click(wrapper, '#toggle');
-
+  click('#add');
+  click('#addAsync');
+  click('#addAsync');
+  click('#toggle');
   error(() => create());
-  error(() => click(wrapper, '#errPayload'));
-  error(() => click(wrapper, '#errOutModel'));
+  error(() => click('#errPayload'));
+  error(() => click('#errOutModel'));
+
+  const useOldStyle = () => create(() => ({}));
+  renderHook(useOldStyle);
 
   setTimeout(() => {
     wrapper.unmount();
