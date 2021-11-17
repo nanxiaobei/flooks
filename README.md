@@ -70,29 +70,38 @@ function Counter() {
 
 ## Auto optimization
 
-Through `proxy`, flooks realizes a gorgeous auto optimization, re-render completely on demand, when React is truly "react".
+Through `proxy`, flooks realizes a gorgeous auto optimization, only actually used data will be injected into the component, re-render completely on demand, when React is truly "react".
 
-Only actually used data will be injected into the component. If not, just not injected.
+### Why flooks over zustand?
+
+```js
+// zustand, need a selector
+const { nuts, honey } = useStore((state) => ({ nuts: state.nuts, honey: state.honey }));
+
+// flooks, no selector needed
+// but also only `nuts` or `honey` update triggers re-render, it's automatic!
+const { nuts, honey } = useStore();
+```
 
 ### Only functions, no re-render
 
 ```js
-const { a } = useDemoModel(); // A component, update a
-const { fn } = useDemoModel(); // B component, only functions, no re-render
+const { a } = useDemo(); // A component, update `a`
+const { fn } = useDemo(); // B component, only functions, no re-render
 ```
 
 ### No updated state, no re-render
 
 ```js
-const { a } = useDemoModel(); // A component, update a
-const { b } = useDemoModel(); // B component, no `a`, no re-render
+const { a } = useDemo(); // A component, update `a`
+const { b } = useDemo(); // B component, no `a`, no re-render
 ```
 
 ### No \*.loading, no extra re-render
 
 ```js
-const { asyncFn } = useDemoModel(); // A component, call asyncFn
-asyncFn(); // No asyncFn.loading, no extra re-render
+const { asyncFn } = useDemo(); // A component, call `asyncFn`
+asyncFn(); // No `asyncFn.loading`, no extra re-render
 
 // With normal loading solutions, even `asyncFn.loading` is not used,
 // it will re-render at least twice (turn `true` then `false`).
@@ -131,7 +140,7 @@ const useSomeModel = create(({ get, set }) => ({
 ## From v4 to v5
 
 ```diff
--import useModel from 'flooks';
+-import useDemo from 'flooks';
 +import create from 'flooks';
 
 -import { someModel } from './useSomeModel';
@@ -147,7 +156,7 @@ const useSomeModel = create(({ get, set }) => ({
 -});
 +}));
 
--const useCounter = () => useModel(counter);
+-const useCounter = () => useDemo(counter);
 
 export default useCounter;
 ```

@@ -70,29 +70,38 @@ function Counter() {
 
 ## 自动优化
 
-借助 `proxy`，flooks 实现了惊人的自动优化，完全按需 re-render，React 真正变为 "react"。
+借助 `proxy`，flooks 实现了惊人的自动优化，只有真正用到的数据才会注入组件，完全按需 re-render，React 真正变为 "react"。
 
-只有真正在组件中用到的某个数据，才会注入组件，若未用到，则不会注入。
+### 为什么 flooks 比 zustand 简单？
+
+```js
+// zustand，需要 selector
+const { nuts, honey } = useStore((state) => ({ nuts: state.nuts, honey: state.honey }));
+
+// flooks，无需 selector
+// 但也只有 `nuts` 或 `honey` 更新会触发重新渲染，这是自动的！
+const { nuts, honey } = useStore();
+```
 
 ### 只有函数，无 re-render
 
 ```js
-const { a } = useDemo(); // A 组件，更新 a
+const { a } = useDemo(); // A 组件，更新 `a`
 const { fn } = useDemo(); // B 组件，只有函数，无 re-render
 ```
 
 ### 无被更新 state，无 re-render
 
 ```js
-const { a } = useDemo(); // A 组件，更新 a
+const { a } = useDemo(); // A 组件，更新 `a`
 const { b } = useDemo(); // B 组件，无 `a`，无 re-render
 ```
 
 ### 无 \*.loading，无额外 re-render
 
 ```js
-const { asyncFn } = useDemoModel(); // A 组件，调用 asyncFn
-asyncFn(); // 无 asyncFn.loadin，无额外 re-render
+const { asyncFn } = useDemo(); // A 组件，调用 `asyncFn`
+asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 
 // 普通 loading 方案中，即使 `async.loading` 未用到，
 // 也会 re-render 至少两次（先 `true` 然后 `false`）。
@@ -131,7 +140,7 @@ const useSomeModel = create(({ get, set }) => ({
 ## v4 升级 v5
 
 ```diff
--import useModel from 'flooks';
+-import useDemo from 'flooks';
 +import create from 'flooks';
 
 -import { someModel } from './useSomeModel';
@@ -147,7 +156,7 @@ const useSomeModel = create(({ get, set }) => ({
 -});
 +}));
 
--const useCounter = () => useModel(counter);
+-const useCounter = () => useDemo(counter);
 
 export default useCounter;
 ```
