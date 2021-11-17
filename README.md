@@ -128,11 +128,12 @@ const useSomeModel = create(({ get, set }) => ({
 
 **\* Interconnected modules** - call `get(useAnotherModel)` in `someModel` to get other models, all models can be connected.
 
-## Migrate to v5
+## From v4 to v5
 
 ```diff
 -import useModel from 'flooks';
 +import create from 'flooks';
+
 -import { someModel } from './useSomeModel';
 +import useSomeModel from './useSomeModel';
 
@@ -146,8 +147,9 @@ const useSomeModel = create(({ get, set }) => ({
 -});
 +}));
 
--export default () => useModel(counter);
-+export default useCounter;
+-const useCounter = () => useModel(counter);
+
+export default useCounter;
 ```
 
 ## License

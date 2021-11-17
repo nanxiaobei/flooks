@@ -128,11 +128,12 @@ const useSomeModel = create(({ get, set }) => ({
 
 **\* 彼此互通的模块化** - 在 `someModel` 中调用 `get(useAnotherModel)` 获取其他 model，所有 model 均可互通。
 
-## 升级到 v5
+## v4 升级 v5
 
 ```diff
 -import useModel from 'flooks';
 +import create from 'flooks';
+
 -import { someModel } from './useSomeModel';
 +import useSomeModel from './useSomeModel';
 
@@ -146,8 +147,9 @@ const useSomeModel = create(({ get, set }) => ({
 -});
 +}));
 
--export default () => useModel(counter);
-+export default useCounter;
+-const useCounter = () => useModel(counter);
+
+export default useCounter;
 ```
 
 ## 协议
