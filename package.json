@@ -21,8 +21,7 @@
   "module": "dist/flooks.esm.js",
   "types": "dist/types.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "rimraf dist coverage && rollup -c",
