@@ -19,8 +19,8 @@ const ERR_OUT_MODEL = 'useOutModel passed to get() is not initialized';
 const MIGRATE_URL = 'https://github.com/nanxiaobei/flooks#from-v4-to-v5';
 const MIGRATE_ERR = `flooks v5 installed, sorry for breaking changes. Simple migrate guide: ${MIGRATE_URL}`;
 
-const emptyObj = {};
-const noop = () => undefined;
+const EMPTY_OBJ = {};
+const NOOP = () => undefined;
 const __DEV__ = process.env.NODE_ENV !== 'production';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
@@ -56,9 +56,9 @@ const create: Create = (model) => {
   });
 
   const useModel: UseModel = () => {
-    const ownData = useRef(emptyObj);
+    const ownData = useRef(EMPTY_OBJ);
     const [, setState] = useState(false);
-    const onEffect = useRef<Noop>(noop);
+    const onEffect = useRef<Noop>(NOOP);
 
     useMemo(() => {
       let hasState = false;
@@ -118,23 +118,22 @@ const create: Create = (model) => {
 
       ownData.current = new Proxy(target, handler);
 
-      const updater: Updater = (payload) => {
-        Object.assign(ownData.current, payload);
-
-        if (hasUpdate) {
-          hasUpdate = false;
-          setState((s) => !s);
-        }
-      };
-
-      modelSubs.push(updater);
-
       onEffect.current = () => {
         if (hasState) {
           handler.get = (_, key) => target[key];
+
+          const updater: Updater = (payload) => {
+            Object.assign(ownData.current, payload);
+
+            if (hasUpdate) {
+              hasUpdate = false;
+              setState((s) => !s);
+            }
+          };
+          modelSubs.push(updater);
           return () => modelSubs.splice(modelSubs.indexOf(updater), 1);
         }
-        modelSubs.splice(modelSubs.indexOf(updater), 1);
+
         ownData.current = target;
       };
     }, []);
