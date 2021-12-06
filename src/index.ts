@@ -58,7 +58,7 @@ const create: Create = (model) => {
   const useModel: UseModel = () => {
     const ownData = useRef(EMPTY_OBJ);
     const [, setState] = useState(false);
-    const onEffect = useRef<Noop>(NOOP);
+    const onMount = useRef<Noop>(NOOP);
 
     useMemo(() => {
       let hasState = false;
@@ -118,7 +118,7 @@ const create: Create = (model) => {
 
       ownData.current = new Proxy(target, handler);
 
-      onEffect.current = () => {
+      onMount.current = () => {
         if (hasState) {
           handler.get = (_, key) => target[key];
 
@@ -138,7 +138,7 @@ const create: Create = (model) => {
       };
     }, []);
 
-    useEffect(() => onEffect.current(), []);
+    useEffect(() => onMount.current(), []);
     return ownData.current;
   };
 
