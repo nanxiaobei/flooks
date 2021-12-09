@@ -1,7 +1,7 @@
 <div align="center">
 <h1>flooks <sup><sup><sub>v5</sub></sup></sup></h1>
 
-可自动优化的 React Hooks 状态管理器。小巧、简洁、流畅。
+React Hooks 状态管理器，自动优化。
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
