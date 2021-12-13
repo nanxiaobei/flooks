@@ -70,7 +70,7 @@ function Counter() {
 
 ## 自动优化
 
-借助 `proxy`，flooks 实现了惊人的自动优化，只有真正用到的数据才会注入组件，完全按需 re-render，React 真正变为 "react"。
+flooks 实现了惊人的自动优化，只有真正用到的数据才会注入组件，完全按需 re-render，React 真正变为 "react"。
 
 ### 为什么 flooks 比 zustand 简单？
 

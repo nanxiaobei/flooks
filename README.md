@@ -70,7 +70,7 @@ function Counter() {
 
 ## Auto optimization
 
-Through `proxy`, flooks realizes a gorgeous auto optimization, only actually used data will be injected into the component, re-render completely on demand, when React is truly "react".
+flooks realizes a gorgeous auto optimization, only actually used data will be injected into the component, re-render completely on demand, when React is truly "react".
 
 ### Why flooks over zustand?
 
