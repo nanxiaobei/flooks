@@ -8,7 +8,6 @@
     "flux",
     "redux",
     "store",
-    "model",
     "state",
     "flooks"
   ],
