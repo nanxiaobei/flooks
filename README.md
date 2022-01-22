@@ -114,19 +114,19 @@ asyncFn(); // No `asyncFn.loading`, no extra re-render
 ```js
 import create from 'flooks';
 
-const useSomeModel = create(someModel);
+const useStore = create(initStore);
 ```
 
 ### `get()` & `set()`
 
 ```js
 import create from 'flooks';
-import useAnotherModel from './useAnotherModel';
+import useOutStore from './useOutStore';
 
-const useSomeModel = create(({ get, set }) => ({
-  someFn() {
-    const { a, b } = get(); // get own model
-    const { x, y } = get(useAnotherModel); // get other models
+const useStore = create(({ get, set }) => ({
+  fn() {
+    const { a, b } = get(); // get own store
+    const { x, y } = get(useOutStore); // get other stores
 
     set({ a: a + b }); // payload style
     // or
@@ -135,28 +135,28 @@ const useSomeModel = create(({ get, set }) => ({
 }));
 ```
 
-**\* Interconnected modules** - call `get(useAnotherModel)` in `someModel` to get other models, all models can be connected.
+**\* Interconnected modules** - call `get(useOutStore)` to get other stores, all stores can be connected.
 
 ## From v4 to v5
 
 ```diff
-- import useModel from 'flooks';
+- import useStore from 'flooks';
 + import create from 'flooks';
 
-- import { someModel } from './useSomeModel';
-+ import useSomeModel from './useSomeModel';
+- import { outStore } from './useOutStore';
++ import useOutStore from './useOutStore';
 
 - const counter = ({ get, set }) => ({
 + const useCounter = create(({ get, set }) => ({
     count: 0,
     add() {
--     const { count } = get(someModel);
-+     const { count } = get(useSomeModel);
+-     const { count } = get(outStore);
++     const { count } = get(useOutStore);
     },
 - });
 + }));
 
-- const useCounter = () => useModel(counter);
+- const useCounter = () => useStore(counter);
 
   export default useCounter;
 ```

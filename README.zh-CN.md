@@ -114,19 +114,19 @@ asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 ```js
 import create from 'flooks';
 
-const useSomeModel = create(someModel);
+const useStore = create(initStore);
 ```
 
 ### `get()` & `set()`
 
 ```js
 import create from 'flooks';
-import useAnotherModel from './useAnotherModel';
+import useOutStore from './useOutStore';
 
-const useSomeModel = create(({ get, set }) => ({
-  someFn() {
-    const { a, b } = get(); // 获取自身 model
-    const { x, y } = get(useAnotherModel); // 获取其它 model
+const useStore = create(({ get, set }) => ({
+  fn() {
+    const { a, b } = get(); // 获取自身 store
+    const { x, y } = get(useOutStore); // 获取其它 store
 
     set({ a: a + b }); // 对象形式
     // or
@@ -135,28 +135,28 @@ const useSomeModel = create(({ get, set }) => ({
 }));
 ```
 
-**\* 彼此互通的模块化** - 在 `someModel` 中调用 `get(useAnotherModel)` 获取其他 model，所有 model 均可互通。
+**\* 彼此互通的模块化** - 调用 `get(useOutStore)` 获取其他 store，所有 store 均可互通。
 
 ## v4 升级 v5
 
 ```diff
-- import useModel from 'flooks';
+- import useStore from 'flooks';
 + import create from 'flooks';
 
-- import { someModel } from './useSomeModel';
-+ import useSomeModel from './useSomeModel';
+- import { outStore } from './useOutStore';
++ import useOutStore from './useOutStore';
 
 - const counter = ({ get, set }) => ({
 + const useCounter = create(({ get, set }) => ({
     count: 0,
     add() {
--     const { count } = get(someModel);
-+     const { count } = get(useSomeModel);
+-     const { count } = get(outStore);
++     const { count } = get(useOutStore);
     },
 - });
 + }));
 
-- const useCounter = () => useModel(counter);
+- const useCounter = () => useStore(counter);
 
   export default useCounter;
 ```
