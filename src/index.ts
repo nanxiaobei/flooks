@@ -1,76 +1,61 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-type Data = { [key: string]: any };
-type UseModel = () => Data;
-type Updater = (payload: Data) => void;
-type Reducer = (payload: Data) => Data;
+type State = { [key: string]: any };
+type Listener = (newState: State) => void;
+type Handler = { get: (t: State, k: string) => any; set: (t: State, k: string, v: any) => true };
 
-type GetData = (useModel?: UseModel) => Data;
-type SetData = (payload: Data | Reducer) => void;
-type Model = ({ get, set }: { get: GetData; set: SetData }) => Data;
-type Create = (model: Model) => UseModel;
+type GetStore = (useOutStore?: () => State) => State | undefined;
+type SetStore = (payload: State | ((prevState: State) => State)) => void;
+type InitStore = ({ get, set }: { get: GetStore; set: SetStore }) => State;
 
-type Noop = () => void;
-type Handler = { get: (t: any, k: string) => any; set: (t: any, k: string, v: any) => true };
-
-const ERR_MODEL = 'model should be a function';
+const ERR_INIT_STORE = 'initStore should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
-const ERR_OUT_MODEL = 'useOutModel passed to get() is not initialized';
-const MIGRATE_URL = 'https://github.com/nanxiaobei/flooks#from-v4-to-v5';
-const MIGRATE_ERR = `flooks v5 installed, sorry for breaking changes. Simple migrate guide: ${MIGRATE_URL}`;
+const ERR_USE_OUT_STORE = 'useOutStore passed to get() is not initialized';
 
-const EMPTY_OBJ = {};
-const NOOP = () => undefined;
 const __DEV__ = process.env.NODE_ENV !== 'production';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
-const map: WeakMap<Model, any> = new WeakMap();
+const map: WeakMap<() => State, State> = new WeakMap();
 
-const create: Create = (model) => {
-  if (__DEV__ && typeof model !== 'function') throw new Error(ERR_MODEL);
+function create(initStore: InitStore): () => State;
 
-  try {
-    useState(0); // eslint-disable-line react-hooks/rules-of-hooks
-    throw new Error(MIGRATE_ERR);
-  } catch (err: any) {
-    if (err.message === MIGRATE_ERR) throw err;
-  }
+function create(initStore: InitStore) {
+  if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT_STORE);
 
-  const modelSubs: Updater[] = [];
-  const modelData = model({
-    get(useOutModel) {
-      if (typeof useOutModel === 'undefined') return modelData;
-      const outData = map.get(useOutModel);
-      if (__DEV__ && !outData) throw new Error(ERR_OUT_MODEL);
-      return outData;
+  const listeners: Listener[] = [];
+
+  const store = initStore({
+    get(useOutStore) {
+      if (typeof useOutStore === 'undefined') return store;
+      const outStore = map.get(useOutStore);
+      if (__DEV__ && !outStore) throw new Error(ERR_USE_OUT_STORE);
+      return outStore;
     },
     set(payload) {
       if (typeof payload === 'function') {
-        payload = payload(modelData);
+        payload = payload(store);
       } else if (__DEV__ && notObj(payload)) {
         throw new Error(ERR_PAYLOAD);
       }
-      Object.assign(modelData, payload);
-      modelSubs.forEach((updater) => updater(payload));
+      Object.assign(store, payload);
+      listeners.forEach((listener) => listener(payload));
     },
   });
 
-  const useModel: UseModel = () => {
-    const ownData = useRef(EMPTY_OBJ);
-    const [, setState] = useState(false);
-    const onMount = useRef<Noop>(NOOP);
+  const useStore = () => {
+    const piece = useRef<any>();
+    const onMount = useRef<any>();
 
-    useMemo(() => {
-      let hasState = false;
+    const [, setState] = useState(() => {
+      let hasVal = false;
       let hasUpdate = false;
 
-      const target: Data = {};
       const handler: Handler = {
-        get(_, key) {
-          const val = modelData[key];
+        get(target, key) {
+          const val = store[key];
 
           if (typeof val !== 'function') {
-            hasState = true;
+            hasVal = true;
             target[key] = val;
             return target[key];
           }
@@ -107,8 +92,8 @@ const create: Create = (model) => {
           return target[key];
         },
 
-        set(_, key, val) {
-          if (key in target) {
+        set(target, key, val) {
+          if (key in target && val !== target[key]) {
             hasUpdate = true;
             target[key] = val;
           }
@@ -116,34 +101,34 @@ const create: Create = (model) => {
         },
       };
 
-      ownData.current = new Proxy(target, handler);
+      piece.current = new Proxy({}, handler);
+
+      const listener: Listener = (newState) => {
+        Object.assign(piece.current, newState);
+        if (hasUpdate) {
+          hasUpdate = false;
+          setState((s) => !s);
+        }
+      };
+      listeners.push(listener);
+      const unsubscribe = () => {
+        listeners.splice(listeners.indexOf(listener), 1);
+      };
 
       onMount.current = () => {
-        if (hasState) {
-          handler.get = (_, key) => target[key];
-
-          const updater: Updater = (payload) => {
-            Object.assign(ownData.current, payload);
-
-            if (hasUpdate) {
-              hasUpdate = false;
-              setState((s) => !s);
-            }
-          };
-          modelSubs.push(updater);
-          return () => modelSubs.splice(modelSubs.indexOf(updater), 1);
-        }
-
-        ownData.current = target;
+        handler.get = (target, key) => target[key];
+        return hasVal ? unsubscribe : unsubscribe();
       };
-    }, []);
+
+      return false;
+    });
 
     useEffect(() => onMount.current(), []);
-    return ownData.current;
+    return piece.current;
   };
 
-  map.set(useModel, modelData);
-  return useModel;
-};
+  map.set(useStore, store);
+  return useStore;
+}
 
 export default create;
