@@ -32,11 +32,11 @@ test('create', (done) => {
     },
   }));
 
-  const useErrModel = create(({ get, set }) => ({
+  const useErrStore = create(({ get, set }) => ({
     errPayload() {
       set([]);
     },
-    errOutModel() {
+    errOutStore() {
       const { add } = get(useCounter);
       add();
       const { notExist } = get(1);
@@ -46,7 +46,7 @@ test('create', (done) => {
   const Counter = () => {
     const { count, add, addAsync } = useCounter();
     const { open, toggle } = useCounter();
-    const { errPayload, errOutModel } = useErrModel();
+    const { errPayload, errOutStore } = useErrStore();
 
     return (
       <>
@@ -56,7 +56,7 @@ test('create', (done) => {
         <button id="addAsync" onClick={addAsync} data-loading={addAsync.loading} />
         <button id="toggle" onClick={toggle} />
         <button id="errPayload" onClick={errPayload} />
-        <button id="errOutModel" onClick={errOutModel} />
+        <button id="errOutStore" onClick={errOutStore} />
       </>
     );
   };
@@ -71,7 +71,7 @@ test('create', (done) => {
   click('#toggle');
   error(() => create());
   error(() => click('#errPayload'));
-  error(() => click('#errOutModel'));
+  error(() => click('#errOutStore'));
 
   const useOldStyle = () => create(() => ({}));
   renderHook(useOldStyle);
