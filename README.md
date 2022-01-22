@@ -19,8 +19,8 @@ English · [简体中文](./README.zh-CN.md)
 ## Features
 
 - Gorgeous auto optimized re-render
-- Intelligent loading state
-- Interconnected modules
+- Automatic request loading
+- Interconnected stores
 - Extremely simple API
 
 ## Install
@@ -62,7 +62,7 @@ function Counter() {
 }
 ```
 
-**\* Intelligent loading state** - if a function is async, `asyncFn.loading` is its loading state. If `asyncFn.loading` is not used, no extra re-render.
+**\* Automatic request loading** - if a function is async, `asyncFn.loading` is its loading state. If `asyncFn.loading` is not used, no extra re-render.
 
 ## Demo
 
@@ -135,7 +135,7 @@ const useStore = create(({ get, set }) => ({
 }));
 ```
 
-**\* Interconnected modules** - call `get(useOutStore)` to get other stores, all stores can be connected.
+**\* Interconnected stores** - call `get(useOutStore)` to get other stores, all stores can be connected.
 
 ## From v4 to v5
 

@@ -19,8 +19,8 @@ React Hooks 状态管理器，自动优化。
 ## 特性
 
 - 惊人的 re-render 自动优化
-- 聪明的 loading state
-- 彼此互通的模块化
+- 自动的 request loading
+- 彼此互通的 store
 - 极其简单的 API
 
 ## 安装
@@ -62,7 +62,7 @@ function Counter() {
 }
 ```
 
-**\* 聪明的 loading state** - 若函数为异步，`asyncFn.loading` 为其 loading state。若 `asyncFn.loading` 未使用，不触发额外 re-render。
+**\* 自动的 request loading** - 若函数为异步，`asyncFn.loading` 为其 loading state。若 `asyncFn.loading` 未使用，不触发额外 re-render。
 
 ## 示例
 
@@ -135,7 +135,7 @@ const useStore = create(({ get, set }) => ({
 }));
 ```
 
-**\* 彼此互通的模块化** - 调用 `get(useOutStore)` 获取其他 store，所有 store 均可互通。
+**\* 彼此互通的 store** - 调用 `get(useOutStore)` 获取其他 store，所有 store 均可互通。
 
 ## v4 升级 v5
 
