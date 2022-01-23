@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 const ERR_INIT_STORE = 'initStore should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
@@ -43,8 +43,9 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
   const useStore = () => {
     const proxy = useRef<T>(EMPTY_OBJ as T);
     const onMount = useRef<() => void>(NOOP);
+    const [, setState] = useState(false);
 
-    const [, setState] = useState(() => {
+    useMemo(() => {
       let hasVal = false;
       let hasUpdate = false;
 
@@ -117,9 +118,7 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
         handler.get = (target, key) => target[key];
         return hasVal ? unsubscribe : unsubscribe();
       };
-
-      return false;
-    });
+    }, []);
 
     useEffect(() => onMount.current(), []);
 
