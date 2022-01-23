@@ -15,8 +15,9 @@ type State = { [key: string]: any };
 type GetStore<T> = <U = T>(useOutStore?: () => U) => U;
 type SetStore<T> = (partialState: Partial<T> | ((prevState: T) => Partial<T>)) => void;
 type InitStore<T> = ({ get, set }: { get: GetStore<T>; set: SetStore<T> }) => T;
+type UseStore<T> = () => T;
 
-function create<T extends State>(initStore: InitStore<T>) {
+function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
   if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT_STORE);
 
   const listeners: ((partialState: Partial<T>) => void)[] = [];
@@ -39,8 +40,8 @@ function create<T extends State>(initStore: InitStore<T>) {
     },
   });
 
-  const useStore: () => T = () => {
-    const piece = useRef<T>(EMPTY_OBJ as T);
+  const useStore = () => {
+    const proxy = useRef<T>(EMPTY_OBJ as T);
     const onMount = useRef<() => void>(NOOP);
 
     const [, setState] = useState(() => {
@@ -98,10 +99,10 @@ function create<T extends State>(initStore: InitStore<T>) {
         },
       };
 
-      piece.current = new Proxy({} as T, handler as ProxyHandler<T>);
+      proxy.current = new Proxy({} as T, handler as ProxyHandler<T>);
 
       const listener = (partialState: Partial<T>) => {
-        Object.assign(piece.current, partialState);
+        Object.assign(proxy.current, partialState);
         if (hasUpdate) {
           hasUpdate = false;
           setState((s) => !s);
@@ -121,7 +122,8 @@ function create<T extends State>(initStore: InitStore<T>) {
     });
 
     useEffect(() => onMount.current(), []);
-    return piece.current;
+
+    return proxy.current;
   };
 
   map.set(useStore, store);
