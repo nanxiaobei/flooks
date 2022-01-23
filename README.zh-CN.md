@@ -86,21 +86,21 @@ const { nuts, honey } = useStore();
 ### 只有函数，无 re-render
 
 ```js
-const { a } = useDemo(); // A 组件，更新 `a`
-const { fn } = useDemo(); // B 组件，只有函数，无 re-render
+const { a } = useStore(); // A 组件，更新 `a`
+const { fn } = useStore(); // B 组件，只有函数，无 re-render
 ```
 
 ### 无被更新 state，无 re-render
 
 ```js
-const { a } = useDemo(); // A 组件，更新 `a`
-const { b } = useDemo(); // B 组件，无 `a`，无 re-render
+const { a } = useStore(); // A 组件，更新 `a`
+const { b } = useStore(); // B 组件，无 `a`，无 re-render
 ```
 
 ### 无 \*.loading，无额外 re-render
 
 ```js
-const { asyncFn } = useDemo(); // A 组件，调用 `asyncFn`
+const { asyncFn } = useStore(); // A 组件，调用 `asyncFn`
 asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 
 // 普通 loading 方案中，即使 `async.loading` 未用到，

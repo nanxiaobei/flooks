@@ -86,21 +86,21 @@ const { nuts, honey } = useStore();
 ### Only functions, no re-render
 
 ```js
-const { a } = useDemo(); // A component, update `a`
-const { fn } = useDemo(); // B component, only functions, no re-render
+const { a } = useStore(); // A component, update `a`
+const { fn } = useStore(); // B component, only functions, no re-render
 ```
 
 ### No updated state, no re-render
 
 ```js
-const { a } = useDemo(); // A component, update `a`
-const { b } = useDemo(); // B component, no `a`, no re-render
+const { a } = useStore(); // A component, update `a`
+const { b } = useStore(); // B component, no `a`, no re-render
 ```
 
 ### No \*.loading, no extra re-render
 
 ```js
-const { asyncFn } = useDemo(); // A component, call `asyncFn`
+const { asyncFn } = useStore(); // A component, call `asyncFn`
 asyncFn(); // No `asyncFn.loading`, no extra re-render
 
 // With normal loading solutions, even `asyncFn.loading` is not used,
