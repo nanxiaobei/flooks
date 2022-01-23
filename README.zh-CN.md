@@ -28,7 +28,7 @@ React Hooks 状态管理器，性能自动优化。
 ```sh
 yarn add flooks
 
-# npm install flooks
+# npm i flooks
 ```
 
 ## 使用
