@@ -1,28 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 
-type State = { [key: string]: any };
-type Listener = (newState: State) => void;
-type Handler = { get: (t: State, k: string) => any; set: (t: State, k: string, v: any) => true };
-
-type GetStore = (useOutStore?: () => State) => State | undefined;
-type SetStore = (payload: State | ((prevState: State) => State)) => void;
-type InitStore = ({ get, set }: { get: GetStore; set: SetStore }) => State;
-
 const ERR_INIT_STORE = 'initStore should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_USE_OUT_STORE = 'useOutStore passed to get() is not initialized';
 
+const EMPTY_OBJ = {};
+const NOOP = () => undefined;
 const __DEV__ = process.env.NODE_ENV !== 'production';
 const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
 
-const map: WeakMap<() => State, State> = new WeakMap();
+const map = new WeakMap();
 
-function create(initStore: InitStore): () => State;
+type State = { [key: string]: any };
+type GetStore<T> = <U = T>(useOutStore?: () => U) => U;
+type SetStore<T> = (partialState: Partial<T> | ((prevState: T) => Partial<T>)) => void;
+type InitStore<T> = ({ get, set }: { get: GetStore<T>; set: SetStore<T> }) => T;
 
-function create(initStore: InitStore) {
+function create<T extends State>(initStore: InitStore<T>) {
   if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT_STORE);
 
-  const listeners: Listener[] = [];
+  const listeners: ((partialState: Partial<T>) => void)[] = [];
 
   const store = initStore({
     get(useOutStore) {
@@ -37,21 +34,21 @@ function create(initStore: InitStore) {
       } else if (__DEV__ && notObj(payload)) {
         throw new Error(ERR_PAYLOAD);
       }
-      Object.assign(store, payload);
-      listeners.forEach((listener) => listener(payload));
+      Object.assign(store, payload as Partial<T>);
+      listeners.forEach((listener) => listener(payload as Partial<T>));
     },
   });
 
-  const useStore = () => {
-    const piece = useRef<any>();
-    const onMount = useRef<any>();
+  const useStore: () => T = () => {
+    const piece = useRef<T>(EMPTY_OBJ as T);
+    const onMount = useRef<() => void>(NOOP);
 
     const [, setState] = useState(() => {
       let hasVal = false;
       let hasUpdate = false;
 
-      const handler: Handler = {
-        get(target, key) {
+      const handler = {
+        get(target: T, key: keyof T) {
           const val = store[key];
 
           if (typeof val !== 'function') {
@@ -61,7 +58,7 @@ function create(initStore: InitStore) {
           }
 
           target[key] = new Proxy(val, {
-            get: (fn, fnKey) => {
+            get: (fn: any, fnKey) => {
               if (fnKey === 'loading' && !('loading' in fn)) fn.loading = false;
               return fn[fnKey];
             },
@@ -78,11 +75,11 @@ function create(initStore: InitStore) {
                 setState((s) => !s);
               };
 
-              target[key] = (...newArgs: any[]) => {
+              target[key] = ((...newArgs: any[]) => {
                 const newRes = fn(...newArgs);
                 setLoading(true);
                 return newRes.finally(() => setLoading(false));
-              };
+              }) as T[keyof T];
 
               setLoading(true);
               return res.finally(() => setLoading(false));
@@ -92,7 +89,7 @@ function create(initStore: InitStore) {
           return target[key];
         },
 
-        set(target, key, val) {
+        set(target: T, key: keyof T, val: T[keyof T]) {
           if (key in target && val !== target[key]) {
             hasUpdate = true;
             target[key] = val;
@@ -101,10 +98,10 @@ function create(initStore: InitStore) {
         },
       };
 
-      piece.current = new Proxy({}, handler);
+      piece.current = new Proxy({} as T, handler as ProxyHandler<T>);
 
-      const listener: Listener = (newState) => {
-        Object.assign(piece.current, newState);
+      const listener = (partialState: Partial<T>) => {
+        Object.assign(piece.current, partialState);
         if (hasUpdate) {
           hasUpdate = false;
           setState((s) => !s);
