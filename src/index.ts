@@ -12,6 +12,7 @@ const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Ob
 const map = new WeakMap();
 
 type State = { [key: string]: any };
+type Listener<T> = (partialState: Partial<T>) => void;
 type GetStore<T> = <U = T>(useOutStore?: () => U) => U;
 type SetStore<T> = (partialState: Partial<T> | ((prevState: T) => Partial<T>)) => void;
 type InitStore<T> = ({ get, set }: { get: GetStore<T>; set: SetStore<T> }) => T;
@@ -20,7 +21,7 @@ type UseStore<T> = () => T;
 function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
   if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT_STORE);
 
-  const listeners: ((partialState: Partial<T>) => void)[] = [];
+  const listeners: Listener<T>[] = [];
 
   const store = initStore({
     get(useOutStore) {
@@ -102,7 +103,7 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
 
       proxy.current = new Proxy({} as T, handler as ProxyHandler<T>);
 
-      const listener = (partialState: Partial<T>) => {
+      const listener: Listener<T> = (partialState) => {
         Object.assign(proxy.current, partialState);
         if (hasUpdate) {
           hasUpdate = false;
