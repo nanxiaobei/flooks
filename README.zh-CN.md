@@ -1,7 +1,9 @@
 <div align="center">
 <h1>flooks <sup><sup><sub>v5</sub></sup></sup></h1>
 
-React Hooks 状态管理器，性能自动优化。
+(现已支持 React 18)
+
+React Hooks 状态管理器，性能自动优化
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
@@ -76,7 +78,10 @@ flooks 实现了惊人的自动优化，只有真正用到的数据才会注入�
 
 ```js
 // zustand，需要 selector
-const { nuts, honey } = useStore((state) => ({ nuts: state.nuts, honey: state.honey }));
+const { nuts, honey } = useStore((state) => ({
+  nuts: state.nuts,
+  honey: state.honey,
+}));
 
 // flooks，无需 selector
 // 但也只有 `nuts` 或 `honey` 更新会触发重新渲染，这是自动的！
