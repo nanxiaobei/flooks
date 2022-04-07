@@ -1,74 +1,78 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-const ERR_INIT_STORE = 'initStore should be a function';
+const ERR_INIT = 'initStore should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
-const ERR_USE_OUT_STORE = 'useOutStore passed to get() is not initialized';
+const ERR_OUT_STORE = 'useOutStore passed to get() is not initialized';
 
-const EMPTY_OBJ = {};
-const NOOP = () => undefined;
 const __DEV__ = process.env.NODE_ENV !== 'production';
-const notObj = (val: any) => Object.prototype.toString.call(val) !== '[object Object]';
+const obj = (x: any) => Object.prototype.toString.call(x) === '[object Object]';
 
 const map = new WeakMap();
 
-type State = { [key: string]: any };
-type Listener<T> = (partialState: Partial<T>) => void;
+type State = Record<string, any>;
+type Listener<T> = (payload: Partial<T>) => void;
 type GetStore<T> = <U = T>(useOutStore?: () => U) => U;
-type SetStore<T> = (partialState: Partial<T> | ((prevState: T) => Partial<T>)) => void;
+type SetStore<T> = (payload: Partial<T> | ((prev: T) => Partial<T>)) => void;
 type InitStore<T> = ({ get, set }: { get: GetStore<T>; set: SetStore<T> }) => T;
 type UseStore<T> = () => T;
 
 function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
-  if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT_STORE);
+  if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT);
 
-  const listeners: Listener<T>[] = [];
+  const listeners = new Set<Listener<T>>();
 
-  const store = initStore({
+  let store = initStore({
     get(useOutStore) {
       if (typeof useOutStore === 'undefined') return store;
       const outStore = map.get(useOutStore);
-      if (__DEV__ && !outStore) throw new Error(ERR_USE_OUT_STORE);
+      if (__DEV__ && !outStore) throw new Error(ERR_OUT_STORE);
       return outStore;
     },
     set(payload) {
       if (typeof payload === 'function') {
         payload = payload(store);
-      } else if (__DEV__ && notObj(payload)) {
+      } else if (__DEV__ && !obj(payload)) {
         throw new Error(ERR_PAYLOAD);
       }
-      Object.assign(store, payload as Partial<T>);
+      store = { ...store, ...payload };
       listeners.forEach((listener) => listener(payload as Partial<T>));
     },
   });
 
   const useStore = () => {
-    const proxy = useRef<T>(EMPTY_OBJ as T);
-    const onMount = useRef<() => void>(NOOP);
+    const proxy = useRef<T>({} as T);
+    const handler = useRef<ProxyHandler<T>>({});
+    const hasState = useRef(false);
+    const hasUpdate = useRef(false);
     const [, setState] = useState(false);
 
     useMemo(() => {
-      let hasVal = false;
-      let hasUpdate = false;
-
-      const handler = {
+      handler.current = {
         get(target: T, key: keyof T) {
           const val = store[key];
 
           if (typeof val !== 'function') {
-            hasVal = true;
+            hasState.current = true;
             target[key] = val;
             return target[key];
           }
 
           target[key] = new Proxy(val, {
             get: (fn: any, fnKey) => {
-              if (fnKey === 'loading' && !('loading' in fn)) fn.loading = false;
+              if (fnKey === 'loading' && !('loading' in fn)) {
+                fn.loading = false;
+              }
               return fn[fnKey];
             },
 
             apply: (fn, _this, args) => {
               const res = fn(...args);
-              if (!('loading' in fn) || !res || typeof res.then !== 'function') {
+              if (
+                !('loading' in fn) ||
+                !res ||
+                typeof res.then !== 'function'
+              ) {
                 target[key] = fn;
                 return res;
               }
@@ -94,34 +98,37 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
 
         set(target: T, key: keyof T, val: T[keyof T]) {
           if (key in target && val !== target[key]) {
-            hasUpdate = true;
+            hasUpdate.current = true;
             target[key] = val;
           }
           return true;
         },
-      };
+      } as ProxyHandler<T>;
 
-      proxy.current = new Proxy({} as T, handler as ProxyHandler<T>);
-
-      const listener: Listener<T> = (partialState) => {
-        Object.assign(proxy.current, partialState);
-        if (hasUpdate) {
-          hasUpdate = false;
-          setState((s) => !s);
-        }
-      };
-      listeners.push(listener);
-      const unsubscribe = () => {
-        listeners.splice(listeners.indexOf(listener), 1);
-      };
-
-      onMount.current = () => {
-        handler.get = (target, key) => target[key];
-        return hasVal ? unsubscribe : unsubscribe();
-      };
+      proxy.current = new Proxy({} as T, handler.current);
     }, []);
 
-    useEffect(() => onMount.current(), []);
+    useEffect(() => {
+      handler.current.get = (target: T, key: string) => target[key];
+    }, []);
+
+    const subscribe = useCallback((update: () => void) => {
+      if (!hasState.current) return () => undefined;
+
+      const listener: Listener<T> = (payload) => {
+        Object.assign(proxy.current, payload);
+        if (hasUpdate.current) {
+          hasUpdate.current = false;
+          update();
+        }
+      };
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }, []);
+
+    const getSnapshot = useCallback(() => store, []);
+
+    useSyncExternalStore(subscribe, getSnapshot);
 
     return proxy.current;
   };
