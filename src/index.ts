@@ -1,3 +1,4 @@
+import ReactDOM from 'react-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
@@ -5,6 +6,8 @@ const ERR_INIT = 'initStore should be a function';
 const ERR_PAYLOAD = 'payload should be an object or a function';
 const ERR_OUT_STORE = 'useOutStore passed to get() is not initialized';
 
+const run = (fn: () => void) => fn();
+const batch = ReactDOM.unstable_batchedUpdates || /* c8 ignore next */ run;
 const __DEV__ = process.env.NODE_ENV !== 'production';
 const obj = (x: any) => Object.prototype.toString.call(x) === '[object Object]';
 
@@ -36,7 +39,9 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
         throw new Error(ERR_PAYLOAD);
       }
       store = { ...store, ...payload };
-      listeners.forEach((listener) => listener(payload as Partial<T>));
+      batch(() => {
+        listeners.forEach((listener) => listener(payload as Partial<T>));
+      });
     },
   });
 
