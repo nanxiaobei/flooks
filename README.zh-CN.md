@@ -142,30 +142,6 @@ const useStore = create(({ get, set }) => ({
 
 **\* 彼此互通的 store** - 调用 `get(useOutStore)` 获取其他 store，所有 store 均可互通。
 
-## v4 升级 v5
-
-```diff
-- import useStore from 'flooks';
-+ import create from 'flooks';
-
-- import { outStore } from './useOutStore';
-+ import useOutStore from './useOutStore';
-
-- const counter = ({ get, set }) => ({
-+ const useCounter = create(({ get, set }) => ({
-    count: 0,
-    add() {
--     const { count } = get(outStore);
-+     const { count } = get(useOutStore);
-    },
-- });
-+ }));
-
-- const useCounter = () => useStore(counter);
-
-  export default useCounter;
-```
-
 ## 协议
 
 [MIT License](https://github.com/nanxiaobei/flooks/blob/main/LICENSE) (c) [nanxiaobei](https://lee.so/)

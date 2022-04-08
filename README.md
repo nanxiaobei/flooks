@@ -142,30 +142,6 @@ const useStore = create(({ get, set }) => ({
 
 **\* Interconnected stores** - call `get(useOutStore)` to get other stores, all stores can be connected.
 
-## From v4 to v5
-
-```diff
-- import useStore from 'flooks';
-+ import create from 'flooks';
-
-- import { outStore } from './useOutStore';
-+ import useOutStore from './useOutStore';
-
-- const counter = ({ get, set }) => ({
-+ const useCounter = create(({ get, set }) => ({
-    count: 0,
-    add() {
--     const { count } = get(outStore);
-+     const { count } = get(useOutStore);
-    },
-- });
-+ }));
-
-- const useCounter = () => useStore(counter);
-
-  export default useCounter;
-```
-
 ## License
 
 [MIT License](https://github.com/nanxiaobei/flooks/blob/main/LICENSE) (c) [nanxiaobei](https://lee.so/)
