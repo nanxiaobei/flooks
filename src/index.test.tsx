@@ -8,52 +8,35 @@ import create from './index';
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 it('create', async () => {
-  const useCounter = create(({ get, set }) => ({
+  const useCounter = create((store) => ({
     count: 0,
-    open: false,
     add() {
-      const { count } = get();
-      set({ count: count + 1 });
+      const { count } = store();
+      store({ count: count + 1 });
     },
     async addAsync() {
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const { add } = get();
-      add();
-    },
-    toggle() {
-      set((state) => ({ open: !state.open }));
+      store((prev) => ({ count: prev.count + 1 }));
     },
   }));
 
-  const useErrStore = create(({ get, set }) => ({
-    errPayload() {
-      set([]);
-    },
-    errOutStore() {
-      const { add } = get(useCounter);
-      add();
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { notExist } = get(1);
+  const useOnlyFn = create((store) => ({
+    fn() {
+      store();
     },
   }));
 
   const Counter = () => {
     const { count, add, addAsync } = useCounter();
-    const { open, toggle } = useCounter();
-    const { errPayload, errOutStore } = useErrStore();
+    useOnlyFn();
 
     return (
       <>
         <p>{count}</p>
-        <p>{open}</p>
         <button onClick={add}>add</button>
         <button onClick={addAsync} data-loading={addAsync.loading}>
           addAsync
         </button>
-        <button onClick={toggle}>toggle</button>
-        <button onClick={errPayload}>errPayload</button>
-        <button onClick={errOutStore}>errOutStore</button>
       </>
     );
   };
@@ -66,11 +49,7 @@ it('create', async () => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   error(() => create());
-
   click('add');
   click('addAsync');
   click('addAsync');
-  click('toggle');
-  click('errPayload');
-  click('errOutStore');
 });

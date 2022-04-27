@@ -2,22 +2,18 @@ import ReactDOM from 'react-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-const ERR_INIT = 'initStore should be a function';
-const ERR_PAYLOAD = 'payload should be an object or a function';
-const ERR_OUT_STORE = 'useOutStore passed to get() is not initialized';
-
 const run = (fn: () => void) => fn();
 const batch = ReactDOM.unstable_batchedUpdates || /* c8 ignore next */ run;
 const __DEV__ = process.env.NODE_ENV !== 'production';
-const obj = (x: any) => Object.prototype.toString.call(x) === '[object Object]';
-
-const map = new WeakMap();
+const ERR_INIT = 'initStore should be a function';
 
 type State = Record<string, any>;
 type Listener<T> = (payload: Partial<T>) => void;
-type GetStore<T> = <U = T>(useOutStore?: () => U) => U;
-type SetStore<T> = (payload: Partial<T> | ((prev: T) => Partial<T>)) => void;
-type InitStore<T> = ({ get, set }: { get: GetStore<T>; set: SetStore<T> }) => T;
+interface GetSetStore<T> {
+  (): T;
+  (payload: Partial<T> | ((prev: T) => Partial<T>)): void;
+}
+type InitStore<T> = (store: GetSetStore<T>) => T;
 type UseStore<T> = () => T;
 
 function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
@@ -25,27 +21,16 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
 
   const listeners = new Set<Listener<T>>();
 
-  let store = initStore({
-    get(useOutStore) {
-      if (typeof useOutStore === 'undefined') return store;
-      const outStore = map.get(useOutStore);
-      if (__DEV__ && !outStore) throw new Error(ERR_OUT_STORE);
-      return outStore;
-    },
-    set(payload) {
-      if (typeof payload === 'function') {
-        payload = payload(store);
-      } else if (__DEV__ && !obj(payload)) {
-        throw new Error(ERR_PAYLOAD);
-      }
-      store = { ...store, ...payload };
-      batch(() => {
-        listeners.forEach((listener) => listener(payload as Partial<T>));
-      });
-    },
-  });
+  let store = initStore(((payload) => {
+    if (typeof payload === 'undefined') return store;
+    const partial = typeof payload === 'function' ? payload(store) : payload;
+    store = { ...store, ...partial };
+    batch(() => {
+      listeners.forEach((listener) => listener(partial));
+    });
+  }) as GetSetStore<T>);
 
-  const useStore = () => {
+  return function useStore() {
     const proxy = useRef<T>({} as T);
     const handler = useRef<ProxyHandler<T>>({});
     const hasState = useRef(false);
@@ -132,14 +117,10 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
     }, []);
 
     const getSnapshot = useCallback(() => store, []);
-
     useSyncExternalStore(subscribe, getSnapshot);
 
     return proxy.current;
   };
-
-  map.set(useStore, store);
-  return useStore;
 }
 
 export default create;
