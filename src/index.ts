@@ -5,7 +5,6 @@ import { useSyncExternalStore } from 'use-sync-external-store/shim';
 const run = (fn: () => void) => fn();
 const batch = ReactDOM.unstable_batchedUpdates || /* c8 ignore next */ run;
 const __DEV__ = process.env.NODE_ENV !== 'production';
-const ERR_INIT = 'initStore should be a function';
 
 type State = Record<string, any>;
 type Listener<T> = (payload: Partial<T>) => void;
@@ -17,18 +16,35 @@ type InitStore<T> = (store: GetSetStore<T>) => T;
 type UseStore<T> = () => T;
 
 function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
-  if (__DEV__ && typeof initStore !== 'function') throw new Error(ERR_INIT);
+  if (__DEV__ && typeof initStore !== 'function') {
+    throw new Error('Expected a function');
+  }
 
+  let store: T;
   const listeners = new Set<Listener<T>>();
 
-  let store = initStore(((payload) => {
-    if (typeof payload === 'undefined') return store;
-    const partial = typeof payload === 'function' ? payload(store) : payload;
+  const getSetStore: any = (next: unknown) => {
+    if (typeof next === 'undefined') return store;
+    const partial = typeof next === 'function' ? next(store) : next;
     store = { ...store, ...partial };
-    batch(() => {
-      listeners.forEach((listener) => listener(partial));
-    });
-  }) as GetSetStore<T>);
+    batch(() => listeners.forEach((listener) => listener(partial)));
+  };
+
+  /* c8 ignore start */
+  getSetStore.get = () => {
+    console.error(
+      'get() is deprecated since v6, upgrade: https://github.com/nanxiaobei/flooks'
+    );
+    return {};
+  };
+  getSetStore.set = () => {
+    console.error(
+      'set() is deprecated since v6, upgrade: https://github.com/nanxiaobei/flooks'
+    );
+  };
+  /* c8 ignore stop */
+
+  store = initStore(getSetStore as GetSetStore<T>);
 
   return function useStore() {
     const proxy = useRef<T>({} as T);
