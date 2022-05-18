@@ -1,5 +1,5 @@
 <div align="center">
-<h1>flooks <sup><sup><sub>v5</sub></sup></sup></h1>
+<h1>flooks <sup><sup><sub>v6</sub></sup></sup></h1>
 
 (Now Support React 18)
 
@@ -22,7 +22,6 @@ English · [简体中文](./README.zh-CN.md)
 
 - Gorgeous auto optimized re-render
 - Automatic request loading
-- Interconnected stores
 - Extremely simple API
 
 ## Install
@@ -38,15 +37,15 @@ yarn add flooks
 ```jsx
 import create from 'flooks';
 
-const useCounter = create(({ get, set }) => ({
+const useCounter = create((store) => ({
   count: 0,
   add() {
-    const { count } = get();
-    set({ count: count + 1 });
+    const { count } = store();
+    store({ count: count + 1 });
   },
   async addAsync() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const { add } = get();
+    const { add } = store();
     add();
   },
 }));
@@ -119,28 +118,24 @@ asyncFn(); // No `asyncFn.loading`, no extra re-render
 ```js
 import create from 'flooks';
 
-const useStore = create(initStore);
+const useStore = create((store) => storeData);
 ```
 
-### `get()` & `set()`
+### `store()`
 
 ```js
 import create from 'flooks';
-import useOutStore from './useOutStore';
 
-const useStore = create(({ get, set }) => ({
+const useStore = create((store) => ({
   fn() {
-    const { a, b } = get(); // get own store
-    const { x, y } = get(useOutStore); // get other stores
+    const { a, b } = store(); // get store
 
-    set({ a: a + b }); // payload style
+    store({ a: a + b }); // update store by payload
     // or
-    set((state) => ({ a: state.a + state.b })); // function style
+    store((state) => ({ a: state.a + state.b })); // update store by function
   },
 }));
 ```
-
-**\* Interconnected stores** - call `get(useOutStore)` to get other stores, all stores can be connected.
 
 ## License
 

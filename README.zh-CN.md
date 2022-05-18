@@ -1,5 +1,5 @@
 <div align="center">
-<h1>flooks <sup><sup><sub>v5</sub></sup></sup></h1>
+<h1>flooks <sup><sup><sub>v6</sub></sup></sup></h1>
 
 (现已支持 React 18)
 
@@ -21,8 +21,7 @@ React Hooks 状态管理器，性能自动优化
 ## 特性
 
 - 惊人的 re-render 自动优化
-- 自动的 request loading
-- 彼此互通的 store
+- 自动 request loading
 - 极其简单的 API
 
 ## 安装
@@ -38,15 +37,15 @@ yarn add flooks
 ```jsx
 import create from 'flooks';
 
-const useCounter = create(({ get, set }) => ({
+const useCounter = create((store) => ({
   count: 0,
   add() {
-    const { count } = get();
-    set({ count: count + 1 });
+    const { count } = store();
+    store({ count: count + 1 });
   },
   async addAsync() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const { add } = get();
+    const { add } = store();
     add();
   },
 }));
@@ -119,28 +118,24 @@ asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 ```js
 import create from 'flooks';
 
-const useStore = create(initStore);
+const useStore = create((store) => storeData);
 ```
 
-### `get()` & `set()`
+### `store()`
 
 ```js
 import create from 'flooks';
-import useOutStore from './useOutStore';
 
-const useStore = create(({ get, set }) => ({
+const useStore = create((store) => ({
   fn() {
-    const { a, b } = get(); // 获取自身 store
-    const { x, y } = get(useOutStore); // 获取其它 store
+    const { a, b } = store(); // 获取 store
 
-    set({ a: a + b }); // 对象形式
+    store({ a: a + b }); // 对象形式更新 store
     // or
-    set((state) => ({ a: state.a + state.b })); // 函数形式
+    store((state) => ({ a: state.a + state.b })); // 函数形式更新 store
   },
 }));
 ```
-
-**\* 彼此互通的 store** - 调用 `get(useOutStore)` 获取其他 store，所有 store 均可互通。
 
 ## 协议
 
