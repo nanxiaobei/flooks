@@ -6,29 +6,27 @@ const run = (fn: () => void) => fn();
 const batch = ReactDOM.unstable_batchedUpdates || /* c8 ignore next */ run;
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
-type State = Record<string, any>;
-type Listener<T> = (payload: Partial<T>) => void;
-interface GetSetStore<T> {
+type GetSetStore<T> = {
   (): T;
-  (payload: Partial<T> | ((prev: T) => Partial<T>)): void;
-}
-type InitStore<T> = (store: GetSetStore<T>) => T;
-type UseStore<T> = () => T;
+  (s: Partial<T> | ((state: T) => Partial<T>)): void;
+};
 
-function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
+function create<T extends Record<string, any>>(
+  initStore: (getSetStore: GetSetStore<T>) => T
+): () => T {
   if (__DEV__ && typeof initStore !== 'function') {
     throw new Error('Expected a function');
   }
 
   let store: T;
-  const listeners = new Set<Listener<T>>();
+  const listeners = new Set<(partial: Partial<T>) => void>();
 
-  const getSetStore: any = (next: unknown) => {
-    if (typeof next === 'undefined') return store;
-    const partial = typeof next === 'function' ? next(store) : next;
+  function getSetStore(s?: unknown) {
+    if (typeof s === 'undefined') return store;
+    const partial = typeof s === 'function' ? s(store) : s;
     store = { ...store, ...partial };
     batch(() => listeners.forEach((listener) => listener(partial)));
-  };
+  }
 
   /* c8 ignore start */
   getSetStore.get = () => {
@@ -121,13 +119,14 @@ function create<T extends State>(initStore: InitStore<T>): UseStore<T> {
     const subscribe = useCallback((update: () => void) => {
       if (!hasState.current) return () => undefined;
 
-      const listener: Listener<T> = (payload) => {
-        Object.assign(proxy.current, payload);
+      const listener = (partial: Partial<T>) => {
+        Object.assign(proxy.current, partial);
         if (hasUpdate.current) {
           hasUpdate.current = false;
           update();
         }
       };
+
       listeners.add(listener);
       return () => listeners.delete(listener);
     }, []);
