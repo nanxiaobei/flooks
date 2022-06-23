@@ -19,6 +19,6 @@ module.exports = {
     es6: true,
   },
   settings: {
-    'import/resolver': { node: { extensions: ['.js', '.ts'] } },
+    'import/resolver': { node: { extensions: ['.ts', '.tsx'] } },
   },
 };
