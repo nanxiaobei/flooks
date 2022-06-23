@@ -31,8 +31,7 @@
     "use-sync-external-store": "^1.2.0"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=16.8.0"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.3",
@@ -40,7 +39,6 @@
     "@testing-library/react": "^13.3.0",
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.14",
-    "@types/react-dom": "^18.0.5",
     "@types/testing-library__jest-dom": "^5.14.5",
     "@types/use-sync-external-store": "^0.0.3",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
@@ -53,7 +51,6 @@
     "jsdom": "^20.0.0",
     "prettier": "^2.7.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "rollup": "^2.75.7",
     "rollup-plugin-dts": "^4.2.2",
     "tslib": "^2.4.0",

@@ -6,7 +6,6 @@ specifiers:
   '@testing-library/react': ^13.3.0
   '@types/node': ^18.0.0
   '@types/react': ^18.0.14
-  '@types/react-dom': ^18.0.5
   '@types/testing-library__jest-dom': ^5.14.5
   '@types/use-sync-external-store': ^0.0.3
   '@typescript-eslint/eslint-plugin': ^5.29.0
@@ -19,7 +18,6 @@ specifiers:
   jsdom: ^20.0.0
   prettier: ^2.7.1
   react: ^18.2.0
-  react-dom: ^18.2.0
   rollup: ^2.75.7
   rollup-plugin-dts: ^4.2.2
   tslib: ^2.4.0
@@ -33,10 +31,9 @@ dependencies:
 devDependencies:
   '@rollup/plugin-typescript': 8.3.3_g4qkabtmybowem44p7ts7jnbqm
   '@testing-library/jest-dom': 5.16.4
-  '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
+  '@testing-library/react': 13.3.0_react@18.2.0
   '@types/node': 18.0.0
   '@types/react': 18.0.14
-  '@types/react-dom': 18.0.5
   '@types/testing-library__jest-dom': 5.14.5
   '@types/use-sync-external-store': 0.0.3
   '@typescript-eslint/eslint-plugin': 5.29.0_qqmbkyiaixvppdwswpytuf2hgm
@@ -49,7 +46,6 @@ devDependencies:
   jsdom: 20.0.0
   prettier: 2.7.1
   react: 18.2.0
-  react-dom: 18.2.0_react@18.2.0
   rollup: 2.75.7
   rollup-plugin-dts: 4.2.2_okefoyb4o5sittgqayreuhurei
   tslib: 2.4.0
@@ -234,7 +230,7 @@ packages:
       redent: 3.0.0
     dev: true
 
-  /@testing-library/react/13.3.0_biqbaboplfbrettd7655fr4n2y:
+  /@testing-library/react/13.3.0_react@18.2.0:
     resolution: {integrity: sha512-DB79aA426+deFgGSjnf5grczDPiL4taK3hFaa+M5q7q20Kcve9eQottOG5kZ74KEr55v0tU2CQormSSDK87zYQ==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -245,7 +241,6 @@ packages:
       '@testing-library/dom': 8.14.0
       '@types/react-dom': 18.0.5
       react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
     dev: true
 
   /@tootallnate/once/2.0.0:
@@ -2258,16 +2253,6 @@ packages:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
 
-  /react-dom/18.2.0_react@18.2.0:
-    resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
-    peerDependencies:
-      react: ^18.2.0
-    dependencies:
-      loose-envify: 1.4.0
-      react: 18.2.0
-      scheduler: 0.23.0
-    dev: true
-
   /react-is/17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
@@ -2380,12 +2365,6 @@ packages:
     engines: {node: '>=v12.22.7'}
     dependencies:
       xmlchars: 2.2.0
-    dev: true
-
-  /scheduler/0.23.0:
-    resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
-    dependencies:
-      loose-envify: 1.4.0
     dev: true
 
   /semver/6.3.0:

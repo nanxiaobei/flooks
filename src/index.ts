@@ -1,19 +1,17 @@
-import ReactDOM from 'react-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-const run = (fn: () => void) => fn();
-const batch = ReactDOM.unstable_batchedUpdates || /* c8 ignore next */ run;
+let run = (fn: () => void) => fn();
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
+type State = Record<string, any>;
 type GetSetStore<T> = {
   (): T;
   (s: Partial<T> | ((state: T) => Partial<T>)): void;
 };
+type InitStore<T> = (getSetStore: GetSetStore<T>) => T;
 
-function create<T extends Record<string, any>>(
-  initStore: (getSetStore: GetSetStore<T>) => T
-): () => T {
+const create = <T extends State>(initStore: InitStore<T>): (() => T) => {
   if (__DEV__ && typeof initStore !== 'function') {
     throw new Error('Expected a function');
   }
@@ -25,22 +23,8 @@ function create<T extends Record<string, any>>(
     if (typeof s === 'undefined') return store;
     const partial = typeof s === 'function' ? s(store) : s;
     store = { ...store, ...partial };
-    batch(() => listeners.forEach((listener) => listener(partial)));
+    run(() => listeners.forEach((listener) => listener(partial)));
   }
-
-  /* c8 ignore start */
-  getSetStore.get = () => {
-    console.error(
-      'get() is deprecated since v6, upgrade: https://github.com/nanxiaobei/flooks'
-    );
-    return {};
-  };
-  getSetStore.set = () => {
-    console.error(
-      'set() is deprecated since v6, upgrade: https://github.com/nanxiaobei/flooks'
-    );
-  };
-  /* c8 ignore stop */
 
   store = initStore(getSetStore as GetSetStore<T>);
 
@@ -86,7 +70,7 @@ function create<T extends Record<string, any>>(
                 setState((s) => !s);
               };
 
-              target[key] = ((...newArgs: any[]) => {
+              target[key] = ((...newArgs: unknown[]) => {
                 const newRes = fn(...newArgs);
                 setLoading(true);
                 return newRes.finally(() => setLoading(false));
@@ -136,6 +120,10 @@ function create<T extends Record<string, any>>(
 
     return proxy.current;
   };
-}
+};
+
+create.config = ({ batch }: { batch: () => void }) => {
+  run = batch;
+};
 
 export default create;
