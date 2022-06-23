@@ -119,6 +119,11 @@ asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 import create from 'flooks';
 
 const useStore = create((store) => storeData);
+
+// 对于 `react<=17`，可以使用 `create.config()` 传入
+// `ReactDOM.unstable_batchedUpdates` 用于异步更新的批量更新。
+//
+// create.config({ batch: ReactDOM.unstable_batchedUpdates })
 ```
 
 ### `store()`

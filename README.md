@@ -119,6 +119,11 @@ asyncFn(); // No `asyncFn.loading`, no extra re-render
 import create from 'flooks';
 
 const useStore = create((store) => storeData);
+
+// For `react<=17`, you can use `create.config()` to pass
+// `ReactDOM.unstable_batchedUpdates` for batch updating in async updates.
+//
+// create.config({ batch: ReactDOM.unstable_batchedUpdates })
 ```
 
 ### `store()`
