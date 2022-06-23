@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-let run = (fn: () => void) => fn();
+let run = (fn: () => void) => {
+  fn();
+};
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
 type State = Record<string, any>;
@@ -122,7 +124,7 @@ const create = <T extends State>(initStore: InitStore<T>): (() => T) => {
   };
 };
 
-create.config = ({ batch }: { batch: () => void }) => {
+create.config = ({ batch }: { batch: typeof run }) => {
   run = batch;
 };
 
