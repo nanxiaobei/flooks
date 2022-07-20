@@ -150,4 +150,4 @@ const useStore = create((store) => ({
 
 Try [**FUTAKE**](https://sotake.com/f) in WeChat. A mini app for your inspiration moments. 🌈
 
-![FUTAKE](https://s3.jpg.cm/2021/09/21/IFG3wi.png)
+![](https://s3.bmp.ovh/imgs/2022/07/21/452dd47aeb790abd.png)
