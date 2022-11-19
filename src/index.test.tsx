@@ -1,6 +1,7 @@
-import React from 'react';
-import { test, expect } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/react';
+import ReactDOM from 'react-dom';
+import { expect, test } from 'vitest';
+import '@testing-library/jest-dom';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import create from './index';
 
 test('create', async () => {
@@ -57,4 +58,8 @@ test('create', async () => {
   await waitFor(() => {
     expect(getByText('3')).toBeInTheDocument();
   });
+});
+
+test('create.config', () => {
+  create.config({ batch: ReactDOM.unstable_batchedUpdates });
 });
