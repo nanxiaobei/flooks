@@ -6,7 +6,7 @@
 React Hooks 状态管理器，性能自动优化
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nanxiaobei/flooks/Test?style=flat-square)](https://github.com/nanxiaobei/flooks/actions?query=workflow%3ATest)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/nanxiaobei/flooks/test.yml?branch=main&style=flat-square)](https://github.com/nanxiaobei/flooks/actions/workflows/test.yml)
 [![Codecov](https://img.shields.io/codecov/c/github/nanxiaobei/flooks?style=flat-square)](https://codecov.io/gh/nanxiaobei/flooks)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/flooks?style=flat-square)](https://bundlephobia.com/result?p=flooks)
 [![npm type definitions](https://img.shields.io/npm/types/typescript?style=flat-square)](https://github.com/nanxiaobei/flooks/blob/main/src/index.ts)
