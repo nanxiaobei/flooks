@@ -27,9 +27,11 @@ React Hooks 状态管理器，性能自动优化
 ## 安装
 
 ```sh
+pnpm add flooks
+# or
 yarn add flooks
-
-# npm i flooks
+# or
+npm i flooks
 ```
 
 ## 使用

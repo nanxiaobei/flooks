@@ -27,9 +27,11 @@ English · [简体中文](./README.zh-CN.md)
 ## Install
 
 ```sh
+pnpm add flooks
+# or
 yarn add flooks
-
-# npm i flooks
+# or
+npm i flooks
 ```
 
 ## Usage
