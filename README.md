@@ -8,9 +8,7 @@ Create now ➫ [🔗 kee.so](https://kee.so/)
 ---
 
 <div align="center">
-<h1>flooks <sup><sup><sub>v6</sub></sup></sup></h1>
-
-(Now Support React 18)
+<h1>flooks</h1>
 
 State Manager for React Hooks, Auto Optimized
 

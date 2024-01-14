@@ -8,11 +8,9 @@ Create now ➫ [🔗 kee.so](https://kee.so/)
 ---
 
 <div align="center">
-<h1>flooks <sup><sup><sub>v6</sub></sup></sup></h1>
+<h1>flooks</h1>
 
-(现已支持 React 18)
-
-React Hooks 状态管理器，性能自动优化
+React Hooks 状态管理器，可自动优化性能
 
 [![npm](https://img.shields.io/npm/v/flooks?style=flat-square)](https://www.npmjs.com/package/flooks)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/nanxiaobei/flooks/test.yml?branch=main&style=flat-square)](https://github.com/nanxiaobei/flooks/actions/workflows/test.yml)
