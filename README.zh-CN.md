@@ -91,7 +91,7 @@ const { nuts, honey } = useStore((state) => ({
 }));
 
 // flooks，无需 selector
-// 但也只有 `nuts` 或 `honey` 更新会触发重新渲染，这是自动的！
+// 但也只有 `nuts` 或 `honey` 更新会触发重新渲染，这是自动的
 const { nuts, honey } = useStore();
 ```
 
@@ -109,7 +109,7 @@ const { a } = useStore(); // A 组件，更新 `a`
 const { b } = useStore(); // B 组件，无 `a`，无 re-render
 ```
 
-### 无 \*.loading，无额外 re-render
+### 无 fn.loading，无额外 re-render
 
 ```js
 const { asyncFn } = useStore(); // A 组件，调用 `asyncFn`
@@ -126,7 +126,7 @@ asyncFn(); // 无 `asyncFn.loading`，无额外 re-render
 ```js
 import create from 'flooks';
 
-const useStore = create((store) => storeData);
+const useStore = create((store) => obj);
 
 // 对于 `react<=17`，可以使用 `create.config()` 传入
 // `ReactDOM.unstable_batchedUpdates` 用于异步更新的批量更新。
@@ -143,9 +143,9 @@ const useStore = create((store) => ({
   fn() {
     const { a, b } = store(); // 获取 store
 
-    store({ a: a + b }); // 对象形式更新 store
+    store({ a: a + b }); // 使用数据更新 store
     // or
-    store((state) => ({ a: state.a + state.b })); // 函数形式更新 store
+    store((state) => ({ a: state.a + state.b })); // 使用函数更新 store
   },
 }));
 ```

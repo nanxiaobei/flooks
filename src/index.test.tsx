@@ -1,12 +1,13 @@
-import ReactDOM from 'react-dom';
-import { expect, test } from 'vitest';
 import '@testing-library/jest-dom';
 import { fireEvent, render, waitFor } from '@testing-library/react';
+import ReactDOM from 'react-dom';
+import { expect, test } from 'vitest';
 import create from './index';
 
 test('create', async () => {
   const useCounter = create((store) => ({
     count: 0,
+    text: 'hello',
     add() {
       const { count } = store();
       store({ count: count + 1 });
@@ -15,25 +16,25 @@ test('create', async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       store((prev) => ({ count: prev.count + 1 }));
     },
-  }));
-
-  const useOnlyFn = create((store) => ({
-    fn() {
-      store();
+    setText() {
+      store({ text: 'world' });
     },
   }));
 
   const Counter = () => {
-    const { count, add, addAsync } = useCounter();
-    useOnlyFn();
+    const counter = useCounter();
 
     return (
       <>
-        <p>{count}</p>
-        <button onClick={add}>add</button>
-        <button onClick={addAsync} data-loading={addAsync.loading}>
+        <p>{counter.count}</p>
+        <button onClick={counter.add}>add</button>
+        <button
+          onClick={() => counter.addAsync()}
+          data-loading={counter.addAsync.loading}
+        >
           addAsync
         </button>
+        <button onClick={() => counter.setText()}>setText</button>
       </>
     );
   };
@@ -42,7 +43,7 @@ test('create', async () => {
   // @ts-ignore
   expect(() => create()).toThrow();
 
-  const { getByText } = render(<Counter />);
+  const { getByText, queryByText } = render(<Counter />);
 
   fireEvent.click(getByText('add'));
   expect(getByText('1')).toBeInTheDocument();
@@ -58,6 +59,9 @@ test('create', async () => {
   await waitFor(() => {
     expect(getByText('3')).toBeInTheDocument();
   });
+
+  fireEvent.click(getByText('setText'));
+  expect(queryByText('hello')).not.toBeInTheDocument();
 });
 
 test('create.config', () => {

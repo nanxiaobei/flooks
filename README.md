@@ -90,8 +90,8 @@ const { nuts, honey } = useStore((state) => ({
   honey: state.honey,
 }));
 
-// flooks, no selector needed
-// but also only `nuts` or `honey` update triggers re-render, it's automatic!
+// flooks, not need a selector
+// but also only `nuts` or `honey` update trigger re-render, it's automatic
 const { nuts, honey } = useStore();
 ```
 
@@ -109,7 +109,7 @@ const { a } = useStore(); // A component, update `a`
 const { b } = useStore(); // B component, no `a`, no re-render
 ```
 
-### No \*.loading, no extra re-render
+### No fn.loading, no extra re-render
 
 ```js
 const { asyncFn } = useStore(); // A component, call `asyncFn`
@@ -126,7 +126,7 @@ asyncFn(); // No `asyncFn.loading`, no extra re-render
 ```js
 import create from 'flooks';
 
-const useStore = create((store) => storeData);
+const useStore = create((store) => obj);
 
 // For `react<=17`, you can use `create.config()` to pass
 // `ReactDOM.unstable_batchedUpdates` for batch updating in async updates.
@@ -141,11 +141,11 @@ import create from 'flooks';
 
 const useStore = create((store) => ({
   fn() {
-    const { a, b } = store(); // get store
+    const { a, b } = store(); // get state
 
-    store({ a: a + b }); // update store by payload
+    store({ a: a + b }); // update state by data
     // or
-    store((state) => ({ a: state.a + state.b })); // update store by function
+    store((state) => ({ a: state.a + state.b })); // update state by function
   },
 }));
 ```
