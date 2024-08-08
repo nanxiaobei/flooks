@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-let batchUpdate = (callback: () => void) => {
+let run = (callback: () => void) => {
   callback();
 };
+
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
 type Obj = Record<string, any>;
@@ -31,7 +32,7 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
     }
 
     // set state
-    batchUpdate(() => {
+    run(() => {
       const newState = typeof payload === 'function' ? payload(state) : payload;
       state = { ...state, ...newState };
       setters.forEach((setter) => setter(newState));
@@ -74,7 +75,7 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
           }
 
           // action utils
-          const keyGetter = (fnTarget: T[K], fnKey: string) => {
+          const fnGetter = (fnTarget: T[K], fnKey: string) => {
             if (fnKey === 'loading' && !('loading' in fnTarget)) {
               fnTarget.loading = false;
             }
@@ -92,12 +93,16 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
           };
 
           // init actions.current
+          if (__DEV__ && !(key in obj)) {
+            throw new Error(`${key as string} not exist`);
+          }
+
           const rawFn = obj[key];
           const fakeFn = (() => {}) as T[K];
 
           actions.current[key] = new Proxy(fakeFn, {
-            get: keyGetter,
-            apply: async (fnTarget: T[K], _this, args) => {
+            get: fnGetter,
+            apply: (fnTarget: T[K], _this, args) => {
               addLoading(fnTarget);
               const res = rawFn(...args);
 
@@ -107,8 +112,8 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
               }
 
               actions.current[key] = new Proxy(fakeFn, {
-                get: keyGetter,
-                apply: async (newFnTarget: T[K], _newThis, newArgs) => {
+                get: fnGetter,
+                apply: (newFnTarget: T[K], _newThis, newArgs) => {
                   addLoading(newFnTarget);
                   return rawFn(...newArgs);
                 },
@@ -151,8 +156,8 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
   };
 };
 
-create.config = ({ batch }: { batch: typeof batchUpdate }) => {
-  batchUpdate = batch;
+create.config = ({ batch }: { batch: typeof run }) => {
+  run = batch;
 };
 
 export default create;
