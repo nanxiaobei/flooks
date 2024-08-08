@@ -4,11 +4,11 @@ import ReactDOM from 'react-dom';
 import { expect, test, vi } from 'vitest';
 import create from './index';
 
-const getHookErr = (fn: () => void) => {
+const getHookErr = (hook: () => void) => {
   let err;
   const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
   try {
-    renderHook(fn);
+    renderHook(hook);
   } catch (e) {
     err = (e as { message?: string }).message;
   }
