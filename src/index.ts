@@ -55,7 +55,7 @@ const create = <T extends Obj>(initObj: InitObj<T>): (() => T) => {
     const [, dispatch] = useReducer((s) => ++s, 0);
 
     // component level data
-    const stateDeps = useRef<Set<K>>();
+    const stateDeps = useRef<Set<K>>(undefined);
     stateDeps.current = new Set();
     const actions = useRef<T>({} as T);
 
